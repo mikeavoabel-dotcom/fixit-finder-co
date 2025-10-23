@@ -3,10 +3,11 @@ import Hero from "@/components/Hero";
 import CategoryTabs from "@/components/CategoryTabs";
 import ProfessionalListings from "@/components/ProfessionalListings";
 import Footer from "@/components/Footer";
+import BottomNav from "@/components/BottomNav";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       <SimpleHeader />
       <Hero />
       <CategoryTabs />
@@ -14,6 +15,7 @@ const Index = () => {
         <ProfessionalListings />
       </main>
       <Footer />
+      <BottomNav />
     </div>
   );
 };
