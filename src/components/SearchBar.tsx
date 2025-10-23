@@ -10,14 +10,14 @@ const SearchBar = () => {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <Input 
-              placeholder="Search for services or professionals..." 
+              placeholder="What do you need?" 
               className="pl-10 h-12 bg-background border-0 shadow-md"
             />
           </div>
           <div className="w-full md:w-64 relative">
             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <Input 
-              placeholder="Enter location" 
+              placeholder="Location" 
               className="pl-10 h-12 bg-background border-0 shadow-md"
             />
           </div>

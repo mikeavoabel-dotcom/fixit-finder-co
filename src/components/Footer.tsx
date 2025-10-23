@@ -11,7 +11,7 @@ const Footer = () => {
               <span className="text-2xl font-bold">HomeConnect</span>
             </div>
             <p className="text-background/80 mb-4">
-              Connecting homeowners with skilled local professionals for all home service needs.
+              Connect with local home service professionals
             </p>
           </div>
           

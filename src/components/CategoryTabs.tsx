@@ -18,7 +18,7 @@ const CategoryTabs = () => {
       <div className="container mx-auto px-4">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           <Button variant="default" size="sm" className="shrink-0">
-            All Services
+            All
           </Button>
           {categories.map((cat) => (
             <Button 
