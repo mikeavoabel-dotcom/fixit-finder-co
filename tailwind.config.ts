@@ -57,6 +57,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        sponsored: {
+          DEFAULT: "hsl(var(--sponsored))",
+          foreground: "hsl(var(--sponsored-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -106,12 +110,14 @@ export default {
         "slide-in": "slide-in 0.5s ease-out",
       },
       backgroundImage: {
-        "gradient-hero": "var(--gradient-hero)",
-        "gradient-subtle": "var(--gradient-subtle)",
+        "gradient-header": "var(--gradient-header)",
+        "gradient-sponsored": "var(--gradient-sponsored)",
+        "gradient-card": "var(--gradient-card)",
       },
       boxShadow: {
         card: "var(--shadow-card)",
         "card-hover": "var(--shadow-card-hover)",
+        sponsored: "var(--shadow-sponsored)",
       },
       transitionProperty: {
         smooth: "var(--transition-smooth)",

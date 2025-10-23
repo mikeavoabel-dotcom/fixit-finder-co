@@ -1,19 +1,17 @@
-import Header from "@/components/Header";
-import Hero from "@/components/Hero";
-import ServiceCategories from "@/components/ServiceCategories";
-import FeaturedProfessionals from "@/components/FeaturedProfessionals";
-import HowItWorks from "@/components/HowItWorks";
+import SimpleHeader from "@/components/SimpleHeader";
+import SearchBar from "@/components/SearchBar";
+import CategoryTabs from "@/components/CategoryTabs";
+import ProfessionalListings from "@/components/ProfessionalListings";
 import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <SimpleHeader />
+      <SearchBar />
+      <CategoryTabs />
       <main>
-        <Hero />
-        <ServiceCategories />
-        <FeaturedProfessionals />
-        <HowItWorks />
+        <ProfessionalListings />
       </main>
       <Footer />
     </div>
