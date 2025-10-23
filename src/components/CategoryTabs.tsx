@@ -1,40 +1,43 @@
-import { Wrench, Zap, PaintBucket, Home, Droplets, Hammer, Settings, Trees } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 const categories = [
-  { icon: Droplets, label: "Plumbing", count: 120 },
-  { icon: Zap, label: "Electrical", count: 95 },
-  { icon: PaintBucket, label: "Painting", count: 85 },
-  { icon: Home, label: "Roofing", count: 65 },
-  { icon: Wrench, label: "Handyman", count: 150 },
-  { icon: Hammer, label: "Carpentry", count: 70 },
-  { icon: Settings, label: "HVAC", count: 55 },
-  { icon: Trees, label: "Landscaping", count: 90 },
+  { name: "Plumbing", badge: null },
+  { name: "Electrical", badge: null },
+  { name: "Painting", badge: null },
+  { name: "Roofing", badge: null },
+  { name: "Handyman", badge: "POPULAR" },
+  { name: "HVAC", badge: null },
+  { name: "Carpentry", badge: null },
+  { name: "Landscaping", badge: "TRENDING" },
 ];
 
 const CategoryTabs = () => {
   return (
-    <div className="bg-background border-b border-border py-4 sticky top-40 z-30 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          <Button variant="default" size="sm" className="shrink-0">
-            All
-          </Button>
-          {categories.map((cat) => (
-            <Button 
-              key={cat.label} 
-              variant="outline" 
-              size="sm" 
-              className="shrink-0 gap-2"
-            >
-              <cat.icon className="w-4 h-4" />
-              {cat.label}
-              <span className="text-xs text-muted-foreground">({cat.count})</span>
-            </Button>
-          ))}
-        </div>
+    <section className="bg-background border-b border-border py-6">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollArea className="w-full">
+          <div className="flex gap-3 justify-center">
+            {categories.map((category) => {
+              return (
+                <button
+                  key={category.name}
+                  className="px-5 py-2 rounded-full border border-border hover:border-foreground hover:bg-accent transition-colors text-sm font-medium text-foreground whitespace-nowrap flex items-center gap-2"
+                >
+                  {category.name}
+                  {category.badge && (
+                    <Badge variant="secondary" className="bg-foreground text-background text-xs px-2 py-0">
+                      {category.badge}
+                    </Badge>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
-    </div>
+    </section>
   );
 };
 

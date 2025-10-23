@@ -1,5 +1,5 @@
 import SimpleHeader from "@/components/SimpleHeader";
-import SearchBar from "@/components/SearchBar";
+import Hero from "@/components/Hero";
 import CategoryTabs from "@/components/CategoryTabs";
 import ProfessionalListings from "@/components/ProfessionalListings";
 import Footer from "@/components/Footer";
@@ -8,7 +8,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <SimpleHeader />
-      <SearchBar />
+      <Hero />
       <CategoryTabs />
       <main>
         <ProfessionalListings />

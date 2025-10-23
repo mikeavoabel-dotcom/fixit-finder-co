@@ -1,6 +1,7 @@
 import { Star, MapPin, CheckCircle2, Crown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const professionals = [
@@ -95,62 +96,65 @@ const ProfessionalListings = () => {
   const renderProfessionalCard = (pro: typeof professionals[0]) => (
     <Card 
       key={pro.id}
-      className={`overflow-hidden hover:shadow-card-hover transition-all duration-300 border ${
+      className={`overflow-hidden hover:shadow-card-hover transition-all duration-200 cursor-pointer ${
         pro.sponsored 
-          ? 'border-sponsored bg-gradient-sponsored shadow-sponsored' 
+          ? 'border-sponsored/30 bg-sponsored/5' 
           : 'border-border bg-card'
       }`}
     >
-      {pro.sponsored && (
-        <div className="bg-sponsored text-sponsored-foreground px-3 py-1.5 flex items-center gap-1.5 text-xs font-bold">
-          <Crown className="w-3.5 h-3.5" />
-          SPONSORED
-        </div>
-      )}
-      <div className={pro.sponsored ? 'p-4 bg-card' : 'p-4'}>
-        <div className="flex gap-3">
-          <Avatar className="h-16 w-16 border-2 border-primary shrink-0">
+      <div className="p-5">
+        <div className="flex gap-4">
+          <Avatar className="h-20 w-20 shrink-0">
             <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${pro.name}`} />
-            <AvatarFallback>{pro.avatar}</AvatarFallback>
+            <AvatarFallback className="text-lg">{pro.avatar}</AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-1">
+            <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0">
-                <h3 className="text-lg font-bold text-card-foreground truncate">
-                  {pro.name}
-                </h3>
-                <p className="text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-xl font-semibold text-foreground truncate">
+                    {pro.name}
+                  </h3>
+                  {pro.verified && (
+                    <CheckCircle2 className="w-5 h-5 text-secondary shrink-0" />
+                  )}
+                </div>
+                <p className="text-base text-muted-foreground">
                   {pro.specialty}
                 </p>
               </div>
-              {pro.verified && (
-                <CheckCircle2 className="w-5 h-5 text-secondary shrink-0" />
+              {pro.sponsored && (
+                <Badge variant="secondary" className="bg-sponsored text-sponsored-foreground shrink-0">
+                  <Crown className="w-3 h-3 mr-1" />
+                  Ad
+                </Badge>
               )}
             </div>
             
-            <div className="flex items-center gap-3 mb-2 text-sm">
+            <div className="flex items-center gap-4 mb-3 text-sm">
               <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-accent text-accent" />
-                <span className="font-bold">{pro.rating}</span>
+                <Star className="w-4 h-4 fill-foreground text-foreground" />
+                <span className="font-semibold text-foreground">{pro.rating}</span>
                 <span className="text-muted-foreground">({pro.reviews})</span>
               </div>
-              <span className="text-muted-foreground">{pro.jobs} jobs</span>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <MapPin className="w-3.5 h-3.5" />
+                {pro.location}
+              </div>
             </div>
             
-            <div className="flex items-center gap-1.5 mb-3 text-sm text-muted-foreground">
-              <MapPin className="w-3.5 h-3.5" />
-              {pro.location}
-            </div>
-            
-            <div className="flex items-center justify-between pt-2 border-t border-border">
-              <span className="text-2xl font-bold text-primary">{pro.rate}/hr</span>
+            <div className="flex items-center justify-between pt-3 border-t border-border">
+              <div>
+                <div className="text-sm text-muted-foreground">Starting at</div>
+                <div className="text-2xl font-semibold text-foreground">{pro.rate}</div>
+              </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm">
                   Contact
                 </Button>
-                <Button size="sm" className="bg-secondary hover:bg-secondary/90">
-                  Book
+                <Button size="sm" className="bg-foreground text-background hover:bg-foreground/90">
+                  Book Now
                 </Button>
               </div>
             </div>
@@ -161,26 +165,28 @@ const ProfessionalListings = () => {
   );
 
   return (
-    <section className="py-8 bg-background min-h-screen">
-      <div className="container mx-auto px-4">
-        {sponsoredPros.length > 0 && (
-          <div className="mb-6">
-            <div className="grid grid-cols-1 gap-3">
-              {sponsoredPros.map(renderProfessionalCard)}
+    <section className="py-12 bg-background min-h-screen">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          {sponsoredPros.length > 0 && (
+            <div className="mb-8">
+              <div className="grid grid-cols-1 gap-4">
+                {sponsoredPros.map(renderProfessionalCard)}
+              </div>
+            </div>
+          )}
+          
+          <div>
+            <div className="grid grid-cols-1 gap-4">
+              {regularPros.map(renderProfessionalCard)}
             </div>
           </div>
-        )}
-        
-        <div>
-          <div className="grid grid-cols-1 gap-3">
-            {regularPros.map(renderProfessionalCard)}
+          
+          <div className="text-center mt-10">
+            <Button size="lg" variant="outline" className="px-8">
+              Load More
+            </Button>
           </div>
-        </div>
-        
-        <div className="text-center mt-6">
-          <Button size="lg" variant="outline">
-            Load More
-          </Button>
         </div>
       </div>
     </section>
