@@ -85,9 +85,21 @@ const professionals = [
   },
 ];
 
-const ProfessionalListings = () => {
-  const sponsoredPros = professionals.filter(p => p.sponsored);
-  const regularPros = professionals.filter(p => !p.sponsored).sort((a, b) => {
+interface ProfessionalListingsProps {
+  searchQuery?: string;
+}
+
+const ProfessionalListings = ({ searchQuery = "" }: ProfessionalListingsProps) => {
+  const filteredProfessionals = searchQuery
+    ? professionals.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.location.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : professionals;
+
+  const sponsoredPros = filteredProfessionals.filter(p => p.sponsored);
+  const regularPros = filteredProfessionals.filter(p => !p.sponsored).sort((a, b) => {
     // Sort by rating first, then reviews
     if (b.rating !== a.rating) return b.rating - a.rating;
     return b.reviews - a.reviews;
