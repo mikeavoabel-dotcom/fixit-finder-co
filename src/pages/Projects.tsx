@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Clock, MapPin, Phone, Mail, FileText } from "lucide-react";
+import { Calendar, Clock, MapPin, Phone, Mail, FileText, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import ReviewDialog from "@/components/ReviewDialog";
 
 interface Booking {
   id: string;
@@ -21,12 +22,21 @@ interface Booking {
   notes: string | null;
   status: string;
   created_at: string;
+  professional_id: string;
+  professionals?: {
+    id: string;
+    name: string;
+    specialty: string;
+    phone: string | null;
+  };
 }
 
 const Projects = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [isProfessional, setIsProfessional] = useState(false);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -49,22 +59,36 @@ const Projects = () => {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (!professional) {
-        setLoading(false);
-        return;
+      if (professional) {
+        setIsProfessional(true);
+        // Fetch bookings for this professional
+        const { data, error } = await supabase
+          .from("bookings")
+          .select("*")
+          .eq("professional_id", professional.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setBookings(data || []);
+      } else {
+        // Fetch bookings made by this customer
+        const { data, error } = await supabase
+          .from("bookings")
+          .select(`
+            *,
+            professionals (
+              id,
+              name,
+              specialty,
+              phone
+            )
+          `)
+          .eq("customer_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setBookings(data || []);
       }
-
-      setIsProfessional(true);
-
-      // Fetch bookings for this professional
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("*")
-        .eq("professional_id", professional.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setBookings(data || []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
       toast({
@@ -102,6 +126,37 @@ const Projects = () => {
     }
   };
 
+  const confirmCompletion = async (bookingId: string) => {
+    try {
+      const booking = bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+
+      const { error } = await supabase
+        .from("bookings")
+        .update({ status: "confirmed_completed" })
+        .eq("id", bookingId);
+
+      if (error) throw error;
+
+      setSelectedBooking(booking);
+      setReviewDialogOpen(true);
+
+      toast({
+        title: "Completion confirmed",
+        description: "Please leave a review for the professional",
+      });
+
+      fetchBookings();
+    } catch (error) {
+      console.error("Error confirming completion:", error);
+      toast({
+        title: "Error",
+        description: "Failed to confirm completion",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -109,11 +164,22 @@ const Projects = () => {
       case "confirmed":
         return "bg-blue-500";
       case "completed":
+        return "bg-orange-500";
+      case "confirmed_completed":
         return "bg-green-500";
       case "cancelled":
         return "bg-red-500";
       default:
         return "bg-gray-500";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "confirmed_completed":
+        return "Completed";
+      default:
+        return status;
     }
   };
 
@@ -144,31 +210,57 @@ const Projects = () => {
               <Card key={booking.id}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
-                    <CardTitle>{booking.customer_name}</CardTitle>
+                    <CardTitle>
+                      {isProfessional ? booking.customer_name : booking.professionals?.name}
+                    </CardTitle>
                     <Badge className={getStatusColor(booking.status)}>
-                      {booking.status}
+                      {getStatusLabel(booking.status)}
                     </Badge>
                   </div>
+                  {!isProfessional && booking.professionals && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {booking.professionals.specialty}
+                    </p>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <a href={`tel:${booking.customer_phone}`} className="text-primary hover:underline">
-                          {booking.customer_phone}
-                        </a>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Mail className="w-4 h-4 text-muted-foreground" />
-                        <a href={`mailto:${booking.customer_email}`} className="text-primary hover:underline">
-                          {booking.customer_email}
-                        </a>
-                      </div>
-                      <div className="flex items-start gap-2 text-sm">
-                        <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                        <span>{booking.customer_address}</span>
-                      </div>
+                      {isProfessional ? (
+                        <>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="w-4 h-4 text-muted-foreground" />
+                            <a href={`tel:${booking.customer_phone}`} className="text-primary hover:underline">
+                              {booking.customer_phone}
+                            </a>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Mail className="w-4 h-4 text-muted-foreground" />
+                            <a href={`mailto:${booking.customer_email}`} className="text-primary hover:underline">
+                              {booking.customer_email}
+                            </a>
+                          </div>
+                          <div className="flex items-start gap-2 text-sm">
+                            <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                            <span>{booking.customer_address}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {booking.professionals?.phone && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Phone className="w-4 h-4 text-muted-foreground" />
+                              <a href={`tel:${booking.professionals.phone}`} className="text-primary hover:underline">
+                                {booking.professionals.phone}
+                              </a>
+                            </div>
+                          )}
+                          <div className="flex items-start gap-2 text-sm">
+                            <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                            <span>{booking.customer_address}</span>
+                          </div>
+                        </>
+                      )}
                     </div>
                     
                     <div className="space-y-2">
@@ -202,31 +294,54 @@ const Projects = () => {
                     )}
                   </div>
 
-                  {booking.status === "pending" && (
-                    <div className="flex gap-2 pt-4">
-                      <Button
-                        onClick={() => updateStatus(booking.id, "confirmed")}
-                        className="flex-1"
-                      >
-                        Accept
-                      </Button>
-                      <Button
-                        onClick={() => updateStatus(booking.id, "cancelled")}
-                        variant="destructive"
-                        className="flex-1"
-                      >
-                        Decline
-                      </Button>
-                    </div>
-                  )}
+                  {isProfessional ? (
+                    <>
+                      {booking.status === "pending" && (
+                        <div className="flex gap-2 pt-4">
+                          <Button
+                            onClick={() => updateStatus(booking.id, "confirmed")}
+                            className="flex-1"
+                          >
+                            Accept
+                          </Button>
+                          <Button
+                            onClick={() => updateStatus(booking.id, "cancelled")}
+                            variant="destructive"
+                            className="flex-1"
+                          >
+                            Decline
+                          </Button>
+                        </div>
+                      )}
 
-                  {booking.status === "confirmed" && (
-                    <Button
-                      onClick={() => updateStatus(booking.id, "completed")}
-                      className="w-full"
-                    >
-                      Mark as Completed
-                    </Button>
+                      {booking.status === "confirmed" && (
+                        <Button
+                          onClick={() => updateStatus(booking.id, "completed")}
+                          className="w-full"
+                        >
+                          Mark as Completed
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {booking.status === "completed" && (
+                        <div className="space-y-3 pt-4">
+                          <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                            <Star className="w-5 h-5 text-yellow-500" />
+                            <span className="text-sm font-medium">
+                              Professional marked this job as completed
+                            </span>
+                          </div>
+                          <Button
+                            onClick={() => confirmCompletion(booking.id)}
+                            className="w-full"
+                          >
+                            Confirm Completion & Leave Review
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </CardContent>
               </Card>
@@ -235,6 +350,17 @@ const Projects = () => {
         )}
       </div>
       <BottomNav />
+
+      {selectedBooking && selectedBooking.professionals && (
+        <ReviewDialog
+          open={reviewDialogOpen}
+          onOpenChange={setReviewDialogOpen}
+          professionalId={selectedBooking.professional_id}
+          professionalName={selectedBooking.professionals.name}
+          bookingId={selectedBooking.id}
+          onReviewSubmitted={fetchBookings}
+        />
+      )}
     </div>
   );
 };
