@@ -1,4 +1,4 @@
-import { Star, MapPin, CheckCircle2, Crown, Users } from "lucide-react";
+import { Star, MapPin, CheckCircle2, Crown, Users, ArrowUpDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import BookingDialog from "./BookingDialog";
 import ContactDialog from "./ContactDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Professional {
   id: string;
@@ -37,6 +44,7 @@ const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }:
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
   const [showContactDialog, setShowContactDialog] = useState(false);
+  const [sortBy, setSortBy] = useState<string>("rating-high");
   
   const { data: professionals = [], isLoading } = useQuery({
     queryKey: ['professionals', zipcode],
@@ -102,9 +110,20 @@ const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }:
 
   const sponsoredPros = filteredProfessionals.filter(p => p.is_sponsored);
   const regularPros = filteredProfessionals.filter(p => !p.is_sponsored).sort((a, b) => {
-    // Sort by rating first, then reviews
-    if ((b.rating || 0) !== (a.rating || 0)) return (b.rating || 0) - (a.rating || 0);
-    return (b.review_count || 0) - (a.review_count || 0);
+    switch (sortBy) {
+      case "price-low":
+        return a.hourly_rate - b.hourly_rate;
+      case "price-high":
+        return b.hourly_rate - a.hourly_rate;
+      case "rating-high":
+        if ((b.rating || 0) !== (a.rating || 0)) return (b.rating || 0) - (a.rating || 0);
+        return (b.review_count || 0) - (a.review_count || 0);
+      case "rating-low":
+        if ((a.rating || 0) !== (b.rating || 0)) return (a.rating || 0) - (b.rating || 0);
+        return (a.review_count || 0) - (b.review_count || 0);
+      default:
+        return 0;
+    }
   });
 
   const renderProfessionalCard = (pro: Professional) => (
@@ -230,13 +249,29 @@ const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }:
       <section className="py-12 bg-background min-h-screen">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto">
-            {zipcode && (
-              <div className="mb-6">
-                <p className="text-muted-foreground">
-                  Showing {filteredProfessionals.length} fixer{filteredProfessionals.length !== 1 ? 's' : ''} available in zipcode {zipcode}
-                </p>
+            <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                {zipcode && (
+                  <p className="text-muted-foreground">
+                    Showing {filteredProfessionals.length} fixer{filteredProfessionals.length !== 1 ? 's' : ''} available in zipcode {zipcode}
+                  </p>
+                )}
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[200px] bg-card">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card z-50">
+                    <SelectItem value="rating-high">Highest Rating</SelectItem>
+                    <SelectItem value="rating-low">Lowest Rating</SelectItem>
+                    <SelectItem value="price-low">Price: Low to High</SelectItem>
+                    <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             
             {sponsoredPros.length > 0 && (
               <div className="mb-8">
