@@ -116,14 +116,11 @@ const Profile = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="relative">
-                <Avatar className="h-20 w-20 border-4 border-background">
-                  <AvatarFallback className="bg-background text-secondary text-2xl font-bold">
-                    U
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute bottom-1 right-1 w-4 h-4 bg-secondary rounded-full border-2 border-background"></div>
-              </div>
+              <Avatar className="h-20 w-20 border-4 border-background">
+                <AvatarFallback className="bg-background text-secondary text-2xl font-bold">
+                  U
+                </AvatarFallback>
+              </Avatar>
               <div>
                 <h1 className="text-2xl font-semibold text-background">
                   {profile?.username || "User"}
@@ -131,12 +128,7 @@ const Profile = () => {
                 <p className="text-sm text-background/80">{user?.email}</p>
               </div>
             </div>
-            <button className="relative">
-              <Bell className="w-6 h-6 text-background" />
-              <div className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                1
-              </div>
-            </button>
+            <Bell className="w-6 h-6 text-background" />
           </div>
         </div>
       </div>
