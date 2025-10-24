@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar, Clock, MapPin, Phone, Mail, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Booking {
   id: string;
@@ -25,7 +26,9 @@ interface Booking {
 const Projects = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isProfessional, setIsProfessional] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchBookings();
@@ -44,12 +47,14 @@ const Projects = () => {
         .from("professionals")
         .select("id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (!professional) {
         setLoading(false);
         return;
       }
+
+      setIsProfessional(true);
 
       // Fetch bookings for this professional
       const { data, error } = await supabase
@@ -116,7 +121,14 @@ const Projects = () => {
     <div className="min-h-screen bg-background pb-20">
       <SimpleHeader />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-semibold text-foreground mb-6">Your Bookings</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-semibold text-foreground">Your Bookings</h1>
+          {isProfessional && (
+            <Button onClick={() => navigate("/my-listing")}>
+              Manage Listing
+            </Button>
+          )}
+        </div>
         
         {loading ? (
           <div className="text-center py-16 text-muted-foreground">
