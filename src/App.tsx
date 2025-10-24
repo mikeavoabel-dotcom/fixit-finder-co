@@ -8,6 +8,7 @@ import Profile from "./pages/Profile";
 import Inbox from "./pages/Inbox";
 import SearchPage from "./pages/SearchPage";
 import Projects from "./pages/Projects";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/search" element={<SearchPage />} />
