@@ -6,6 +6,7 @@ import BottomNav from "@/components/BottomNav";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Paperclip } from "lucide-react";
 
 interface Conversation {
   user_id: string;
@@ -13,6 +14,7 @@ interface Conversation {
   last_message: string;
   last_message_time: string;
   unread_count: number;
+  attachment_url?: string;
 }
 
 const Inbox = () => {
@@ -68,6 +70,7 @@ const Inbox = () => {
             last_message: msg.content,
             last_message_time: msg.created_at,
             unread_count: 0,
+            attachment_url: msg.attachment_url,
           });
         }
 
@@ -123,7 +126,14 @@ const Inbox = () => {
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground truncate">
-                      {conv.last_message}
+                      {conv.attachment_url ? (
+                        <span className="inline-flex items-center gap-1">
+                          <Paperclip className="w-3 h-3" />
+                          {conv.last_message || 'Attachment'}
+                        </span>
+                      ) : (
+                        conv.last_message
+                      )}
                     </p>
                   </div>
                   {conv.unread_count > 0 && (
