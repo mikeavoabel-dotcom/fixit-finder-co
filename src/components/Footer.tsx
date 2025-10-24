@@ -7,8 +7,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <Home className="w-8 h-8 text-accent" />
-              <span className="text-2xl font-bold">Fixific</span>
+              <Home className="w-8 h-8 text-primary" />
+              <span className="text-2xl font-bold text-primary">Fixific</span>
             </div>
             <p className="text-background/80 mb-4">
               Connect with local home service professionals

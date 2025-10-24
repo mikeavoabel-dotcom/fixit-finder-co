@@ -14,8 +14,8 @@ All colors MUST be HSL.
     --card-foreground: 0 0% 13%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 13%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 220 100% 50%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 125 71% 66%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96%;
@@ -42,8 +42,8 @@ All colors MUST be HSL.
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    --primary: 220 100% 50%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 125 71% 66%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 15%;
