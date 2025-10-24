@@ -11,6 +11,8 @@ import Projects from "./pages/Projects";
 import Auth from "./pages/Auth";
 import BecomePro from "./pages/BecomePro";
 import MyListing from "./pages/MyListing";
+import ProfessionalDetail from "./pages/ProfessionalDetail";
+import Conversation from "./pages/Conversation";
 import About from "./pages/About";
 import HowItWorks from "./pages/HowItWorks";
 import Contact from "./pages/Contact";
@@ -37,8 +39,10 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/inbox" element={<Inbox />} />
+          <Route path="/conversation/:userId" element={<Conversation />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/professional/:id" element={<ProfessionalDetail />} />
           <Route path="/become-pro" element={<BecomePro />} />
           <Route path="/my-listing" element={<MyListing />} />
           <Route path="/about" element={<About />} />

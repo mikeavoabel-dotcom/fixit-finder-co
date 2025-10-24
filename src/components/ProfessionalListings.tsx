@@ -97,8 +97,7 @@ const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }:
   };
 
   const handleCardClick = (pro: Professional) => {
-    setSelectedProfessional(pro);
-    setShowContactDialog(true);
+    window.location.href = `/professional/${pro.id}`;
   };
 
   const sponsoredPros = filteredProfessionals.filter(p => p.is_sponsored);
@@ -269,6 +268,7 @@ const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }:
           <ContactDialog
             open={showContactDialog}
             onOpenChange={setShowContactDialog}
+            professionalId={selectedProfessional.id}
             professionalName={selectedProfessional.name}
             phone={selectedProfessional.phone}
             specialty={selectedProfessional.specialty}

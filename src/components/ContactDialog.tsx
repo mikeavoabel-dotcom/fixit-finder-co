@@ -1,10 +1,14 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, MessageCircle, MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ContactDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  professionalId: string;
   professionalName: string;
   phone: string | null;
   specialty: string;
@@ -13,15 +17,52 @@ interface ContactDialogProps {
 
 const ContactDialog = ({ 
   open, 
-  onOpenChange, 
+  onOpenChange,
+  professionalId,
   professionalName,
   phone,
   specialty,
   serviceZipcodes
 }: ContactDialogProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   const handleCall = () => {
     if (phone) {
       window.location.href = `tel:${phone}`;
+    }
+  };
+
+  const handleMessage = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Login required",
+          description: "Please login to send messages",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Get professional's user_id
+      const { data: professional } = await supabase
+        .from('professionals')
+        .select('user_id')
+        .eq('id', professionalId)
+        .single();
+
+      if (professional) {
+        onOpenChange(false);
+        navigate(`/conversation/${professional.user_id}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation",
+        variant: "destructive",
+      });
     }
   };
 
@@ -54,18 +95,15 @@ const ContactDialog = ({
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1"
-            >
-              Close
+          <div className="grid grid-cols-2 gap-3 pt-4">
+            <Button onClick={handleMessage} variant="default" className="w-full">
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Message
             </Button>
             {phone && (
-              <Button onClick={handleCall} className="flex-1">
+              <Button onClick={handleCall} variant="outline" className="w-full">
                 <Phone className="w-4 h-4 mr-2" />
-                Call Now
+                Call
               </Button>
             )}
           </div>
