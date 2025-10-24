@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Sparkles, Heart, FileText, Send, Settings, UserCircle, LifeBuoy, MessageCircle, Share2, Briefcase, Bell, LogOut } from "lucide-react";
+import { ChevronRight, Sparkles, Heart, FileText, Send, Settings, UserCircle, LifeBuoy, MessageCircle, Share2, Briefcase, Bell, LogOut, Pencil } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import SimpleHeader from "@/components/SimpleHeader";
@@ -102,6 +102,7 @@ const Profile = () => {
         { icon: LifeBuoy, label: "Support", path: "/support", action: null },
         { icon: MessageCircle, label: "Community and legal", path: "/community", action: null },
         { icon: Share2, label: "Share feedback", path: "/feedback", action: null },
+        { icon: Pencil, label: "My Listing", path: "/my-listing", action: null },
         { icon: Briefcase, label: "Become a Pro", path: "/become-pro", action: null },
       ]
     }
