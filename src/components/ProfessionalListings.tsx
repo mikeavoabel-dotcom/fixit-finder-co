@@ -6,7 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import BookingDialog from "./BookingDialog";
+import ContactDialog from "./ContactDialog";
 
 interface Professional {
   id: string;
@@ -32,6 +34,9 @@ interface ProfessionalListingsProps {
 
 const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }: ProfessionalListingsProps) => {
   const { toast } = useToast();
+  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
+  const [showBookingDialog, setShowBookingDialog] = useState(false);
+  const [showContactDialog, setShowContactDialog] = useState(false);
   
   const { data: professionals = [], isLoading } = useQuery({
     queryKey: ['professionals', zipcode],
@@ -79,27 +84,21 @@ const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }:
     return matchesSearch && matchesCategory && matchesZipcode;
   });
 
-  const handleContact = (proName: string, e: React.MouseEvent) => {
+  const handleContact = (pro: Professional, e: React.MouseEvent) => {
     e.stopPropagation();
-    toast({
-      title: "Contact Professional",
-      description: `Opening chat with ${proName}...`,
-    });
+    setSelectedProfessional(pro);
+    setShowContactDialog(true);
   };
 
-  const handleBookNow = (proName: string, e: React.MouseEvent) => {
+  const handleBookNow = (pro: Professional, e: React.MouseEvent) => {
     e.stopPropagation();
-    toast({
-      title: "Booking Service",
-      description: `Scheduling appointment with ${proName}...`,
-    });
+    setSelectedProfessional(pro);
+    setShowBookingDialog(true);
   };
 
-  const handleCardClick = (proName: string) => {
-    toast({
-      title: "View Profile",
-      description: `Opening ${proName}'s full profile...`,
-    });
+  const handleCardClick = (pro: Professional) => {
+    setSelectedProfessional(pro);
+    setShowContactDialog(true);
   };
 
   const sponsoredPros = filteredProfessionals.filter(p => p.is_sponsored);
@@ -112,7 +111,7 @@ const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }:
   const renderProfessionalCard = (pro: Professional) => (
     <Card 
       key={pro.id}
-      onClick={() => handleCardClick(pro.name)}
+      onClick={() => handleCardClick(pro)}
       className={`overflow-hidden hover:shadow-card-hover transition-all duration-200 cursor-pointer ${
         pro.is_sponsored 
           ? 'border-sponsored/30 bg-sponsored/5' 
@@ -170,14 +169,14 @@ const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }:
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={(e) => handleContact(pro.name, e)}
+                  onClick={(e) => handleContact(pro, e)}
                 >
                   Contact
                 </Button>
                 <Button 
                   size="sm" 
                   className="bg-foreground text-background hover:bg-foreground/90"
-                  onClick={(e) => handleBookNow(pro.name, e)}
+                  onClick={(e) => handleBookNow(pro, e)}
                 >
                   Book Now
                 </Button>
@@ -228,33 +227,56 @@ const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }:
   }
 
   return (
-    <section className="py-12 bg-background min-h-screen">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          {zipcode && (
-            <div className="mb-6">
-              <p className="text-muted-foreground">
-                Showing {filteredProfessionals.length} fixer{filteredProfessionals.length !== 1 ? 's' : ''} available in zipcode {zipcode}
-              </p>
-            </div>
-          )}
-          
-          {sponsoredPros.length > 0 && (
-            <div className="mb-8">
-              <div className="grid grid-cols-1 gap-4">
-                {sponsoredPros.map(renderProfessionalCard)}
+    <>
+      <section className="py-12 bg-background min-h-screen">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto">
+            {zipcode && (
+              <div className="mb-6">
+                <p className="text-muted-foreground">
+                  Showing {filteredProfessionals.length} fixer{filteredProfessionals.length !== 1 ? 's' : ''} available in zipcode {zipcode}
+                </p>
               </div>
-            </div>
-          )}
-          
-          <div>
-            <div className="grid grid-cols-1 gap-4">
-              {regularPros.map(renderProfessionalCard)}
+            )}
+            
+            {sponsoredPros.length > 0 && (
+              <div className="mb-8">
+                <div className="grid grid-cols-1 gap-4">
+                  {sponsoredPros.map(renderProfessionalCard)}
+                </div>
+              </div>
+            )}
+            
+            <div>
+              <div className="grid grid-cols-1 gap-4">
+                {regularPros.map(renderProfessionalCard)}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {selectedProfessional && (
+        <>
+          <BookingDialog
+            open={showBookingDialog}
+            onOpenChange={setShowBookingDialog}
+            professionalId={selectedProfessional.id}
+            professionalName={selectedProfessional.name}
+            specialty={selectedProfessional.specialty}
+            hourlyRate={selectedProfessional.hourly_rate}
+          />
+          <ContactDialog
+            open={showContactDialog}
+            onOpenChange={setShowContactDialog}
+            professionalName={selectedProfessional.name}
+            phone={selectedProfessional.phone}
+            specialty={selectedProfessional.specialty}
+            serviceZipcodes={selectedProfessional.service_zipcodes}
+          />
+        </>
+      )}
+    </>
   );
 };
 
