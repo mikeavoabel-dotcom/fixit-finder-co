@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      professionals: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          hourly_rate: number
+          id: string
+          is_sponsored: boolean | null
+          name: string
+          phone: string | null
+          service_zipcodes: string[]
+          specialty: string
+          total_jobs: number | null
+          updated_at: string
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          hourly_rate: number
+          id?: string
+          is_sponsored?: boolean | null
+          name: string
+          phone?: string | null
+          service_zipcodes?: string[]
+          specialty: string
+          total_jobs?: number | null
+          updated_at?: string
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          hourly_rate?: number
+          id?: string
+          is_sponsored?: boolean | null
+          name?: string
+          phone?: string | null
+          service_zipcodes?: string[]
+          specialty?: string
+          total_jobs?: number | null
+          updated_at?: string
+          user_id?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -109,12 +160,54 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          professional_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          professional_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          professional_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       generate_referral_code: { Args: never; Returns: string }
+      get_professional_rating: {
+        Args: { professional_id: string }
+        Returns: {
+          average_rating: number
+          review_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

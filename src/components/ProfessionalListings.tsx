@@ -1,109 +1,82 @@
-import { Star, MapPin, CheckCircle2, Crown } from "lucide-react";
+import { Star, MapPin, CheckCircle2, Crown, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
-const professionals = [
-  {
-    id: 1,
-    name: "Mike Johnson",
-    specialty: "Master Plumber",
-    rating: 4.9,
-    reviews: 327,
-    location: "Downtown",
-    verified: true,
-    sponsored: true,
-    avatar: "MJ",
-    rate: "$85",
-    jobs: 420
-  },
-  {
-    id: 2,
-    name: "Sarah Williams",
-    specialty: "Electrician",
-    rating: 5.0,
-    reviews: 294,
-    location: "North District",
-    verified: true,
-    sponsored: true,
-    avatar: "SW",
-    rate: "$90",
-    jobs: 356
-  },
-  {
-    id: 3,
-    name: "David Chen",
-    specialty: "Painter",
-    rating: 4.8,
-    reviews: 503,
-    location: "South Side",
-    verified: true,
-    sponsored: false,
-    avatar: "DC",
-    rate: "$75",
-    jobs: 612
-  },
-  {
-    id: 4,
-    name: "Emily Rodriguez",
-    specialty: "Roofer",
-    rating: 4.9,
-    reviews: 188,
-    location: "East End",
-    verified: true,
-    sponsored: false,
-    avatar: "ER",
-    rate: "$95",
-    jobs: 245
-  },
-  {
-    id: 5,
-    name: "James Thompson",
-    specialty: "Handyman",
-    rating: 4.7,
-    reviews: 412,
-    location: "West Side",
-    verified: true,
-    sponsored: false,
-    avatar: "JT",
-    rate: "$65",
-    jobs: 789
-  },
-  {
-    id: 6,
-    name: "Robert Lee",
-    specialty: "Carpenter",
-    rating: 5.0,
-    reviews: 156,
-    location: "Central",
-    verified: true,
-    sponsored: false,
-    avatar: "RL",
-    rate: "$80",
-    jobs: 198
-  },
-];
+interface Professional {
+  id: string;
+  name: string;
+  specialty: string;
+  bio: string | null;
+  hourly_rate: number;
+  service_zipcodes: string[];
+  phone: string | null;
+  avatar_url: string | null;
+  verified: boolean;
+  is_sponsored: boolean;
+  total_jobs: number;
+  rating?: number;
+  review_count?: number;
+}
 
 interface ProfessionalListingsProps {
   searchQuery?: string;
   category?: string;
+  zipcode?: string;
 }
 
-const ProfessionalListings = ({ searchQuery = "", category = "" }: ProfessionalListingsProps) => {
+const ProfessionalListings = ({ searchQuery = "", category = "", zipcode = "" }: ProfessionalListingsProps) => {
   const { toast } = useToast();
   
+  const { data: professionals = [], isLoading } = useQuery({
+    queryKey: ['professionals', zipcode],
+    queryFn: async () => {
+      let query = supabase
+        .from('professionals')
+        .select('*');
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching professionals:', error);
+        throw error;
+      }
+
+      // Fetch ratings for each professional
+      const professionalsWithRatings = await Promise.all(
+        (data || []).map(async (pro) => {
+          const { data: ratingData } = await supabase
+            .rpc('get_professional_rating', { professional_id: pro.id });
+          
+          return {
+            ...pro,
+            rating: ratingData?.[0]?.average_rating || 0,
+            review_count: ratingData?.[0]?.review_count || 0,
+          };
+        })
+      );
+
+      return professionalsWithRatings as Professional[];
+    }
+  });
+
   const filteredProfessionals = professionals.filter(p => {
     const matchesSearch = !searchQuery || 
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.location.toLowerCase().includes(searchQuery.toLowerCase());
+      p.specialty.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesCategory = !category || 
       p.specialty.toLowerCase().includes(category.toLowerCase());
     
-    return matchesSearch && matchesCategory;
+    const matchesZipcode = !zipcode || 
+      p.service_zipcodes.includes(zipcode);
+    
+    return matchesSearch && matchesCategory && matchesZipcode;
   });
 
   const handleContact = (proName: string, e: React.MouseEvent) => {
@@ -129,19 +102,19 @@ const ProfessionalListings = ({ searchQuery = "", category = "" }: ProfessionalL
     });
   };
 
-  const sponsoredPros = filteredProfessionals.filter(p => p.sponsored);
-  const regularPros = filteredProfessionals.filter(p => !p.sponsored).sort((a, b) => {
+  const sponsoredPros = filteredProfessionals.filter(p => p.is_sponsored);
+  const regularPros = filteredProfessionals.filter(p => !p.is_sponsored).sort((a, b) => {
     // Sort by rating first, then reviews
-    if (b.rating !== a.rating) return b.rating - a.rating;
-    return b.reviews - a.reviews;
+    if ((b.rating || 0) !== (a.rating || 0)) return (b.rating || 0) - (a.rating || 0);
+    return (b.review_count || 0) - (a.review_count || 0);
   });
 
-  const renderProfessionalCard = (pro: typeof professionals[0]) => (
+  const renderProfessionalCard = (pro: Professional) => (
     <Card 
       key={pro.id}
       onClick={() => handleCardClick(pro.name)}
       className={`overflow-hidden hover:shadow-card-hover transition-all duration-200 cursor-pointer ${
-        pro.sponsored 
+        pro.is_sponsored 
           ? 'border-sponsored/30 bg-sponsored/5' 
           : 'border-border bg-card'
       }`}
@@ -149,8 +122,8 @@ const ProfessionalListings = ({ searchQuery = "", category = "" }: ProfessionalL
       <div className="p-5">
         <div className="flex gap-4">
           <Avatar className="h-20 w-20 shrink-0">
-            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${pro.name}`} />
-            <AvatarFallback className="text-lg">{pro.avatar}</AvatarFallback>
+            <AvatarImage src={pro.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${pro.name}`} />
+            <AvatarFallback className="text-lg">{pro.name.split(' ').map(n => n[0]).join('').toUpperCase()}</AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
@@ -168,7 +141,7 @@ const ProfessionalListings = ({ searchQuery = "", category = "" }: ProfessionalL
                   {pro.specialty}
                 </p>
               </div>
-              {pro.sponsored && (
+              {pro.is_sponsored && (
                 <Badge variant="secondary" className="bg-sponsored text-sponsored-foreground shrink-0">
                   <Crown className="w-3 h-3 mr-1" />
                   Ad
@@ -179,19 +152,19 @@ const ProfessionalListings = ({ searchQuery = "", category = "" }: ProfessionalL
             <div className="flex items-center gap-4 mb-3 text-sm">
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-foreground text-foreground" />
-                <span className="font-semibold text-foreground">{pro.rating}</span>
-                <span className="text-muted-foreground">({pro.reviews})</span>
+                <span className="font-semibold text-foreground">{pro.rating || 0}</span>
+                <span className="text-muted-foreground">({pro.review_count || 0})</span>
               </div>
               <div className="flex items-center gap-1 text-muted-foreground">
                 <MapPin className="w-3.5 h-3.5" />
-                {pro.location}
+                {pro.service_zipcodes.join(', ')}
               </div>
             </div>
             
             <div className="flex items-center justify-between pt-3 border-t border-border">
               <div>
-                <div className="text-sm text-muted-foreground">Starting at</div>
-                <div className="text-2xl font-semibold text-foreground">{pro.rate}</div>
+                <div className="text-sm text-muted-foreground">Hourly Rate</div>
+                <div className="text-2xl font-semibold text-foreground">${pro.hourly_rate}</div>
               </div>
               <div className="flex gap-2">
                 <Button 
@@ -216,10 +189,56 @@ const ProfessionalListings = ({ searchQuery = "", category = "" }: ProfessionalL
     </Card>
   );
 
+  if (isLoading) {
+    return (
+      <section className="py-12 bg-background min-h-screen">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto text-center">
+            <p className="text-muted-foreground">Loading fixers...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (filteredProfessionals.length === 0) {
+    return (
+      <section className="py-12 bg-background min-h-screen">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto text-center">
+            <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-2xl font-semibold text-foreground mb-2">
+              No fixers available yet
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              {zipcode 
+                ? `No fixers found in zipcode ${zipcode}. Try a different area or check back later.`
+                : "Be the first to join as a professional fixer!"}
+            </p>
+            <Button 
+              onClick={() => window.location.href = '/become-pro'}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Become a Pro
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-12 bg-background min-h-screen">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
+          {zipcode && (
+            <div className="mb-6">
+              <p className="text-muted-foreground">
+                Showing {filteredProfessionals.length} fixer{filteredProfessionals.length !== 1 ? 's' : ''} available in zipcode {zipcode}
+              </p>
+            </div>
+          )}
+          
           {sponsoredPros.length > 0 && (
             <div className="mb-8">
               <div className="grid grid-cols-1 gap-4">
@@ -232,20 +251,6 @@ const ProfessionalListings = ({ searchQuery = "", category = "" }: ProfessionalL
             <div className="grid grid-cols-1 gap-4">
               {regularPros.map(renderProfessionalCard)}
             </div>
-          </div>
-          
-          <div className="text-center mt-10">
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="px-8"
-              onClick={() => toast({
-                title: "Loading More",
-                description: "Fetching more professionals...",
-              })}
-            >
-              Load More
-            </Button>
           </div>
         </div>
       </div>

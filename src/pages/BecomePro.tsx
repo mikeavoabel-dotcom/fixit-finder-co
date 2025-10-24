@@ -9,32 +9,96 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Briefcase, DollarSign, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const BecomePro = () => {
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
+    specialty: "",
     phone: "",
-    service: "",
-    experience: "",
-    message: ""
+    hourlyRate: "",
+    serviceZipcodes: "",
+    bio: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Application Submitted!",
-      description: "We'll review your application and get back to you soon.",
-    });
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      service: "",
-      experience: "",
-      message: ""
-    });
+    setIsSubmitting(true);
+
+    try {
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to become a professional.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+
+      // Parse zipcodes as array
+      const zipcodes = formData.serviceZipcodes
+        .split(',')
+        .map(z => z.trim())
+        .filter(z => z.length > 0);
+
+      if (zipcodes.length === 0) {
+        toast({
+          title: "Zipcode Required",
+          description: "Please enter at least one service zipcode.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Insert professional profile
+      const { error } = await supabase
+        .from('professionals')
+        .insert({
+          user_id: user.id,
+          name: formData.name,
+          specialty: formData.specialty,
+          phone: formData.phone,
+          hourly_rate: parseFloat(formData.hourlyRate),
+          service_zipcodes: zipcodes,
+          bio: formData.bio || null,
+        });
+
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          toast({
+            title: "Already Registered",
+            description: "You already have a professional profile.",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "Application Submitted!",
+          description: "Your professional profile has been created successfully.",
+        });
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error creating professional profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit application. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const benefits = [
@@ -68,7 +132,7 @@ const BecomePro = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-              Become a Professional on Fixific
+              Become a Fixer on Fixific
             </h1>
             <p className="text-lg text-muted-foreground">
               Join thousands of professionals growing their business with Fixific
@@ -92,9 +156,9 @@ const BecomePro = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Apply Now</CardTitle>
+              <CardTitle>Create Your Professional Profile</CardTitle>
               <CardDescription>
-                Fill out the form below and we'll get back to you within 24 hours
+                Fill out the form below to start receiving job requests
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -111,14 +175,13 @@ const BecomePro = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="specialty">Service Category *</Label>
                     <Input
-                      id="email"
-                      type="email"
+                      id="specialty"
                       required
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      placeholder="john@example.com"
+                      value={formData.specialty}
+                      onChange={(e) => setFormData({...formData, specialty: e.target.value})}
+                      placeholder="e.g., Plumbing, Electrical"
                     />
                   </div>
                 </div>
@@ -136,41 +199,47 @@ const BecomePro = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="service">Service Category *</Label>
+                    <Label htmlFor="hourlyRate">Hourly Rate (USD) *</Label>
                     <Input
-                      id="service"
+                      id="hourlyRate"
+                      type="number"
+                      min="1"
+                      step="0.01"
                       required
-                      value={formData.service}
-                      onChange={(e) => setFormData({...formData, service: e.target.value})}
-                      placeholder="e.g., Plumbing, Electrical"
+                      value={formData.hourlyRate}
+                      onChange={(e) => setFormData({...formData, hourlyRate: e.target.value})}
+                      placeholder="75"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="experience">Years of Experience *</Label>
+                  <Label htmlFor="serviceZipcodes">Service Zipcodes *</Label>
                   <Input
-                    id="experience"
+                    id="serviceZipcodes"
                     required
-                    value={formData.experience}
-                    onChange={(e) => setFormData({...formData, experience: e.target.value})}
-                    placeholder="e.g., 5 years"
+                    value={formData.serviceZipcodes}
+                    onChange={(e) => setFormData({...formData, serviceZipcodes: e.target.value})}
+                    placeholder="e.g., 10001, 10002, 10003"
                   />
+                  <p className="text-sm text-muted-foreground">
+                    Enter zipcodes separated by commas
+                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="message">Tell us about yourself</Label>
+                  <Label htmlFor="bio">Tell us about yourself</Label>
                   <Textarea
-                    id="message"
-                    value={formData.message}
-                    onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    placeholder="Describe your experience, certifications, and why you want to join Fixific..."
+                    id="bio"
+                    value={formData.bio}
+                    onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                    placeholder="Describe your experience, certifications, and expertise..."
                     rows={5}
                   />
                 </div>
 
-                <Button type="submit" size="lg" className="w-full">
-                  Submit Application
+                <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Create Professional Profile"}
                 </Button>
               </form>
             </CardContent>

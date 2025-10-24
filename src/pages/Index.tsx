@@ -9,6 +9,7 @@ import { useSearchParams } from "react-router-dom";
 const Index = () => {
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category") || "";
+  const zipcode = searchParams.get("zipcode") || "";
   
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -16,7 +17,7 @@ const Index = () => {
       <Hero />
       <CategoryTabs />
       <main>
-        <ProfessionalListings category={category} />
+        <ProfessionalListings category={category} zipcode={zipcode} />
       </main>
       <Footer />
       <BottomNav />
