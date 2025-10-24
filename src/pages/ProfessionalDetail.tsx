@@ -45,12 +45,7 @@ const ProfessionalDetail = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('reviews')
-        .select(`
-          *,
-          profiles!reviews_user_id_fkey (
-            username
-          )
-        `)
+        .select('*')
         .eq('professional_id', id)
         .order('created_at', { ascending: false });
 
@@ -162,7 +157,7 @@ const ProfessionalDetail = () => {
                   <div key={review.id} className="border-b pb-6 last:border-0">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <p className="font-semibold">{review.profiles?.username || 'Anonymous'}</p>
+                        <p className="font-semibold">Anonymous User</p>
                         <div className="flex items-center gap-1 mt-1">
                           {Array.from({ length: 5 }).map((_, i) => (
                             <Star
