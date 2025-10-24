@@ -6,9 +6,9 @@ import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Paperclip, X, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Send, Paperclip, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 
 interface Message {
   id: string;
@@ -32,7 +32,7 @@ const Conversation = () => {
   const [otherUserName, setOtherUserName] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,7 +70,9 @@ const Conversation = () => {
           receiver_id,
           content,
           created_at,
-          read
+          read,
+          attachment_url,
+          attachment_type
         `)
         .or(`and(sender_id.eq.${user.id},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${user.id})`)
         .order('created_at', { ascending: true });
@@ -152,37 +154,23 @@ const Conversation = () => {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      toast({
-        title: "Error",
-        description: "File size must be less than 10MB",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSelectedFile(file);
-    
-    // Create preview for images
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setPreviewUrl(null);
+    if (file) {
+      setSelectedFile(file);
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
-  const clearFile = () => {
+  const removeSelectedFile = () => {
     setSelectedFile(null);
-    setPreviewUrl(null);
+    setPreviewUrl("");
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -190,17 +178,17 @@ const Conversation = () => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}/${Date.now()}.${fileExt}`;
     
-    const { error: uploadError, data } = await supabase.storage
+    const { data, error } = await supabase.storage
       .from('message-attachments')
       .upload(fileName, file);
 
-    if (uploadError) throw uploadError;
-
+    if (error) throw error;
+    
     const { data: { publicUrl } } = supabase.storage
       .from('message-attachments')
       .getPublicUrl(fileName);
 
-    return { url: publicUrl, type: file.type };
+    return publicUrl;
   };
 
   const sendMessage = async () => {
@@ -215,15 +203,14 @@ const Conversation = () => {
       let attachmentType = null;
 
       if (selectedFile) {
-        const { url, type } = await uploadFile(selectedFile, user.id);
-        attachmentUrl = url;
-        attachmentType = type;
+        attachmentUrl = await uploadFile(selectedFile, user.id);
+        attachmentType = selectedFile.type;
       }
 
       const { error } = await supabase.from('messages').insert({
         sender_id: user.id,
         receiver_id: userId,
-        content: newMessage.trim() || '',
+        content: newMessage.trim() || (selectedFile ? `Sent a ${selectedFile.type.startsWith('image/') ? 'photo' : 'file'}` : ''),
         attachment_url: attachmentUrl,
         attachment_type: attachmentType,
       });
@@ -231,7 +218,7 @@ const Conversation = () => {
       if (error) throw error;
 
       setNewMessage("");
-      clearFile();
+      removeSelectedFile();
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -289,28 +276,26 @@ const Conversation = () => {
                       : 'bg-muted'
                   }`}
                 >
-                  {message.attachment_url && (
-                    <div className="mb-2">
-                      {message.attachment_type?.startsWith('image/') ? (
-                        <img 
-                          src={message.attachment_url} 
-                          alt="Attachment" 
-                          className="rounded-lg max-w-full h-auto max-h-64 object-cover"
-                        />
-                      ) : (
-                        <a 
-                          href={message.attachment_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-sm underline"
-                        >
-                          <Paperclip className="w-4 h-4" />
-                          View attachment
-                        </a>
-                      )}
-                    </div>
+                  {message.attachment_url && message.attachment_type?.startsWith('image/') && (
+                    <img 
+                      src={message.attachment_url} 
+                      alt="Attachment" 
+                      className="rounded-lg mb-2 max-w-full max-h-64 object-cover cursor-pointer"
+                      onClick={() => window.open(message.attachment_url, '_blank')}
+                    />
                   )}
-                  {message.content && <p className="text-sm">{message.content}</p>}
+                  {message.attachment_url && !message.attachment_type?.startsWith('image/') && (
+                    <a 
+                      href={message.attachment_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 mb-2 text-sm underline hover:opacity-80"
+                    >
+                      <Paperclip className="w-4 h-4" />
+                      View attachment
+                    </a>
+                  )}
+                  <p className="text-sm">{message.content}</p>
                   <span className="text-xs opacity-70 mt-1 block">
                     {new Date(message.created_at).toLocaleTimeString([], {
                       hour: '2-digit',
@@ -330,9 +315,9 @@ const Conversation = () => {
           {selectedFile && (
             <div className="mb-2 flex items-center gap-2 p-2 bg-muted rounded-lg">
               {previewUrl ? (
-                <img src={previewUrl} alt="Preview" className="w-12 h-12 object-cover rounded" />
+                <img src={previewUrl} alt="Preview" className="w-16 h-16 object-cover rounded" />
               ) : (
-                <div className="w-12 h-12 bg-muted-foreground/10 rounded flex items-center justify-center">
+                <div className="w-16 h-16 bg-muted-foreground/10 rounded flex items-center justify-center">
                   <Paperclip className="w-6 h-6" />
                 </div>
               )}
@@ -340,7 +325,7 @@ const Conversation = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={clearFile}
+                onClick={removeSelectedFile}
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -348,16 +333,17 @@ const Conversation = () => {
           )}
           <div className="flex gap-2">
             <Input
-              type="file"
               ref={fileInputRef}
-              onChange={handleFileSelect}
+              type="file"
               className="hidden"
+              onChange={handleFileSelect}
               accept="image/*,.pdf,.doc,.docx,.txt"
             />
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
               onClick={() => fileInputRef.current?.click()}
+              disabled={loading}
             >
               <Paperclip className="w-4 h-4" />
             </Button>
