@@ -9,6 +9,10 @@ import Inbox from "./pages/Inbox";
 import SearchPage from "./pages/SearchPage";
 import Projects from "./pages/Projects";
 import Auth from "./pages/Auth";
+import BecomePro from "./pages/BecomePro";
+import About from "./pages/About";
+import HowItWorks from "./pages/HowItWorks";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +30,10 @@ const App = () => (
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/become-pro" element={<BecomePro />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/contact" element={<Contact />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

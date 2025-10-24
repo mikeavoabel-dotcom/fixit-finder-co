@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 const professionals = [
   {
@@ -87,16 +88,46 @@ const professionals = [
 
 interface ProfessionalListingsProps {
   searchQuery?: string;
+  category?: string;
 }
 
-const ProfessionalListings = ({ searchQuery = "" }: ProfessionalListingsProps) => {
-  const filteredProfessionals = searchQuery
-    ? professionals.filter(p => 
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.location.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : professionals;
+const ProfessionalListings = ({ searchQuery = "", category = "" }: ProfessionalListingsProps) => {
+  const { toast } = useToast();
+  
+  const filteredProfessionals = professionals.filter(p => {
+    const matchesSearch = !searchQuery || 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.location.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = !category || 
+      p.specialty.toLowerCase().includes(category.toLowerCase());
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleContact = (proName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast({
+      title: "Contact Professional",
+      description: `Opening chat with ${proName}...`,
+    });
+  };
+
+  const handleBookNow = (proName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast({
+      title: "Booking Service",
+      description: `Scheduling appointment with ${proName}...`,
+    });
+  };
+
+  const handleCardClick = (proName: string) => {
+    toast({
+      title: "View Profile",
+      description: `Opening ${proName}'s full profile...`,
+    });
+  };
 
   const sponsoredPros = filteredProfessionals.filter(p => p.sponsored);
   const regularPros = filteredProfessionals.filter(p => !p.sponsored).sort((a, b) => {
@@ -108,6 +139,7 @@ const ProfessionalListings = ({ searchQuery = "" }: ProfessionalListingsProps) =
   const renderProfessionalCard = (pro: typeof professionals[0]) => (
     <Card 
       key={pro.id}
+      onClick={() => handleCardClick(pro.name)}
       className={`overflow-hidden hover:shadow-card-hover transition-all duration-200 cursor-pointer ${
         pro.sponsored 
           ? 'border-sponsored/30 bg-sponsored/5' 
@@ -162,10 +194,18 @@ const ProfessionalListings = ({ searchQuery = "" }: ProfessionalListingsProps) =
                 <div className="text-2xl font-semibold text-foreground">{pro.rate}</div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={(e) => handleContact(pro.name, e)}
+                >
                   Contact
                 </Button>
-                <Button size="sm" className="bg-foreground text-background hover:bg-foreground/90">
+                <Button 
+                  size="sm" 
+                  className="bg-foreground text-background hover:bg-foreground/90"
+                  onClick={(e) => handleBookNow(pro.name, e)}
+                >
                   Book Now
                 </Button>
               </div>
@@ -195,7 +235,15 @@ const ProfessionalListings = ({ searchQuery = "" }: ProfessionalListingsProps) =
           </div>
           
           <div className="text-center mt-10">
-            <Button size="lg" variant="outline" className="px-8">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="px-8"
+              onClick={() => toast({
+                title: "Loading More",
+                description: "Fetching more professionals...",
+              })}
+            >
               Load More
             </Button>
           </div>

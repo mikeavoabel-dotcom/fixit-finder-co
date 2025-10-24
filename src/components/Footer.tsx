@@ -1,4 +1,5 @@
 import { Home } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -18,20 +19,20 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Services</h4>
             <ul className="space-y-2 text-background/80">
-              <li><a href="#" className="hover:text-accent transition-colors">Plumbing</a></li>
-              <li><a href="#" className="hover:text-accent transition-colors">Electrical</a></li>
-              <li><a href="#" className="hover:text-accent transition-colors">Painting</a></li>
-              <li><a href="#" className="hover:text-accent transition-colors">Roofing</a></li>
+              <li><Link to="/?category=plumbing" className="hover:text-primary transition-colors">Plumbing</Link></li>
+              <li><Link to="/?category=electrical" className="hover:text-primary transition-colors">Electrical</Link></li>
+              <li><Link to="/?category=painting" className="hover:text-primary transition-colors">Painting</Link></li>
+              <li><Link to="/?category=roofing" className="hover:text-primary transition-colors">Roofing</Link></li>
             </ul>
           </div>
           
           <div>
             <h4 className="font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-background/80">
-              <li><a href="#" className="hover:text-accent transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-accent transition-colors">How It Works</a></li>
-              <li><a href="#" className="hover:text-accent transition-colors">Become a Pro</a></li>
-              <li><a href="#" className="hover:text-accent transition-colors">Contact</a></li>
+              <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
+              <li><Link to="/how-it-works" className="hover:text-primary transition-colors">How It Works</Link></li>
+              <li><Link to="/become-pro" className="hover:text-primary transition-colors">Become a Pro</Link></li>
+              <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
             </ul>
           </div>
         </div>

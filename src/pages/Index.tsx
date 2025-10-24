@@ -4,15 +4,19 @@ import CategoryTabs from "@/components/CategoryTabs";
 import ProfessionalListings from "@/components/ProfessionalListings";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
+import { useSearchParams } from "react-router-dom";
 
 const Index = () => {
+  const [searchParams] = useSearchParams();
+  const category = searchParams.get("category") || "";
+  
   return (
     <div className="min-h-screen bg-background pb-20">
       <SimpleHeader />
       <Hero />
       <CategoryTabs />
       <main>
-        <ProfessionalListings />
+        <ProfessionalListings category={category} />
       </main>
       <Footer />
       <BottomNav />
