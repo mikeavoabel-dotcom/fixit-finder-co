@@ -81,7 +81,7 @@ const Profile = () => {
   }
   const menuSections = [
     {
-      title: "My HomeConnect",
+      title: "My Fixific",
       items: [
         { icon: Sparkles, label: "Get inspired", path: "/inspired", action: null },
         { icon: Heart, label: "Saved lists", path: "/saved", action: null },
