@@ -16,9 +16,9 @@ const Profile = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState([
-    { id: 1, title: "Welcome to BlueCaller!", message: "Thanks for joining our community", time: "2 hours ago", unread: true },
-    { id: 2, title: "Profile Update", message: "Your profile has been updated successfully", time: "1 day ago", unread: false },
-    { id: 3, title: "New Message", message: "You have a new message from a professional", time: "3 days ago", unread: false },
+    { id: 1, title: "Welcome to BlueCaller!", message: "Thanks for joining our community", time: "2 hours ago", unread: true, link: "/welcome" },
+    { id: 2, title: "Profile Update", message: "Your profile has been updated successfully", time: "1 day ago", unread: false, link: "/account" },
+    { id: 3, title: "New Message", message: "You have a new message from a professional", time: "3 days ago", unread: false, link: "/inbox" },
   ]);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -162,6 +162,9 @@ const Profile = () => {
                             setNotifications(notifications.map(n => 
                               n.id === notif.id ? { ...n, unread: false } : n
                             ));
+                            if (notif.link) {
+                              navigate(notif.link);
+                            }
                           }}
                         >
                           <div className="flex justify-between items-start gap-2">
