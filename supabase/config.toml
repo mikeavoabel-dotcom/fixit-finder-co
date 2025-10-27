@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.check-stripe-account]
 verify_jwt = true
+
+[functions.submit-quote-request]
+verify_jwt = true

@@ -29,6 +29,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
 import Welcome from "./pages/Welcome";
 import GetQuotes from "./pages/GetQuotes";
+import QuoteRequest from "./pages/QuoteRequest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,7 @@ const App = () => (
           <Route path="/guidelines" element={<CommunityGuidelines />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/get-quotes" element={<GetQuotes />} />
+          <Route path="/quote-request/:id" element={<QuoteRequest />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

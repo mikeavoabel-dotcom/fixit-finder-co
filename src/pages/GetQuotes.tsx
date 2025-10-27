@@ -8,16 +8,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, MessageSquare, DollarSign } from "lucide-react";
+import { CheckCircle, MessageSquare, DollarSign, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const GetQuotes = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     service: "",
     description: "",
     zipcode: "",
     timeline: "",
+    budget: "",
     name: "",
     email: "",
     phone: ""
@@ -38,17 +41,59 @@ const GetQuotes = () => {
     "Other"
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     
-    toast({
-      title: "Quote Request Submitted!",
-      description: "Up to 3 professionals will contact you with quotes within 24 hours",
-    });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to request quotes",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
 
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
+      const { data, error } = await supabase.functions.invoke("submit-quote-request", {
+        body: {
+          serviceCategory: formData.service,
+          projectDescription: formData.description,
+          zipcode: formData.zipcode,
+          timeline: formData.timeline,
+          budget: formData.budget,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Quote Request Submitted!",
+        description: `${data.professionalsNotified} professionals have been notified. Up to 3 will send you quotes within 24 hours.`,
+      });
+
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    } catch (error) {
+      console.error("Error submitting quote request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit quote request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -182,6 +227,24 @@ const GetQuotes = () => {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Budget Range *
+                </label>
+                <Select value={formData.budget} onValueChange={(value) => handleChange("budget", value)} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your budget range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="under-100">Under $100</SelectItem>
+                    <SelectItem value="100-500">$100 - $500</SelectItem>
+                    <SelectItem value="500-1000">$500 - $1,000</SelectItem>
+                    <SelectItem value="1000-5000">$1,000 - $5,000</SelectItem>
+                    <SelectItem value="over-5000">Over $5,000</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="border-t pt-6">
                 <h3 className="text-lg font-semibold text-foreground mb-4">
                   Your Contact Information
@@ -238,33 +301,19 @@ const GetQuotes = () => {
                 </p>
               </div>
 
-              <Button type="submit" size="lg" className="w-full">
-                Get My Free Quotes
+              <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Get My Free Quotes"
+                )}
               </Button>
             </form>
           </CardContent>
         </Card>
-
-        {/* Trust Section */}
-        <div className="text-center mt-12">
-          <p className="text-muted-foreground mb-4">
-            Join thousands of satisfied customers who found the perfect professional
-          </p>
-          <div className="flex justify-center gap-8 flex-wrap">
-            <div>
-              <div className="text-3xl font-bold text-primary">10,000+</div>
-              <div className="text-sm text-muted-foreground">Projects Completed</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary">5,000+</div>
-              <div className="text-sm text-muted-foreground">Verified Professionals</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary">4.8/5</div>
-              <div className="text-sm text-muted-foreground">Average Rating</div>
-            </div>
-          </div>
-        </div>
       </main>
 
       <BottomNav />

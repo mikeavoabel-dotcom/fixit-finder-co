@@ -132,6 +132,36 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       professionals: {
         Row: {
           avatar_url: string | null
@@ -229,6 +259,93 @@ export type Database = {
             columns: ["referred_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_requests: {
+        Row: {
+          budget: string
+          created_at: string
+          customer_email: string
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          project_description: string
+          service_category: string
+          timeline: string
+          zipcode: string
+        }
+        Insert: {
+          budget: string
+          created_at?: string
+          customer_email: string
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          project_description: string
+          service_category: string
+          timeline: string
+          zipcode: string
+        }
+        Update: {
+          budget?: string
+          created_at?: string
+          customer_email?: string
+          customer_id?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          project_description?: string
+          service_category?: string
+          timeline?: string
+          zipcode?: string
+        }
+        Relationships: []
+      }
+      quote_responses: {
+        Row: {
+          created_at: string
+          id: string
+          professional_id: string
+          quote_amount: number
+          quote_details: string | null
+          quote_request_id: string
+          response_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          professional_id: string
+          quote_amount: number
+          quote_details?: string | null
+          quote_request_id: string
+          response_order: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          professional_id?: string
+          quote_amount?: number
+          quote_details?: string | null
+          quote_request_id?: string
+          response_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_responses_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_responses_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
             referencedColumns: ["id"]
           },
         ]
