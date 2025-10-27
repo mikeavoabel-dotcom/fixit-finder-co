@@ -314,6 +314,7 @@ export type Database = {
           quote_details: string | null
           quote_request_id: string
           response_order: number
+          status: string | null
         }
         Insert: {
           created_at?: string
@@ -323,6 +324,7 @@ export type Database = {
           quote_details?: string | null
           quote_request_id: string
           response_order: number
+          status?: string | null
         }
         Update: {
           created_at?: string
@@ -332,6 +334,7 @@ export type Database = {
           quote_details?: string | null
           quote_request_id?: string
           response_order?: number
+          status?: string | null
         }
         Relationships: [
           {

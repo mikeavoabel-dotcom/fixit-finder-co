@@ -4,9 +4,11 @@ import SimpleHeader from "@/components/SimpleHeader";
 import BottomNav from "@/components/BottomNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, FileText, Clock, DollarSign, MapPin } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, FileText, Clock, DollarSign, MapPin, MessageCircle, Check, X } from "lucide-react";
 
 interface QuoteRequest {
   id: string;
@@ -37,15 +39,20 @@ interface MyQuoteRequest extends QuoteRequest {
     quote_amount: number;
     quote_details: string;
     created_at: string;
+    status: string;
+    professional_id: string;
     professionals: {
       name: string;
+      user_id: string;
     };
   }>;
 }
 
 const YourQuotes = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState<string | null>(null);
   const [isProfessional, setIsProfessional] = useState(false);
   const [myRequests, setMyRequests] = useState<MyQuoteRequest[]>([]);
   const [myResponses, setMyResponses] = useState<QuoteResponse[]>([]);
@@ -81,8 +88,11 @@ const YourQuotes = () => {
             quote_amount,
             quote_details,
             created_at,
+            status,
+            professional_id,
             professionals (
-              name
+              name,
+              user_id
             )
           )
         `)
@@ -123,6 +133,41 @@ const YourQuotes = () => {
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const handleUpdateQuoteStatus = async (quoteResponseId: string, newStatus: 'accepted' | 'declined') => {
+    setUpdating(quoteResponseId);
+    try {
+      const { error } = await supabase
+        .from("quote_responses")
+        .update({ status: newStatus })
+        .eq("id", quoteResponseId);
+
+      if (error) throw error;
+
+      toast({
+        title: newStatus === 'accepted' ? "Quote Accepted!" : "Quote Declined",
+        description: newStatus === 'accepted' 
+          ? "The professional will be notified of your acceptance." 
+          : "The quote has been declined.",
+      });
+
+      // Refresh quotes
+      await fetchQuotes();
+    } catch (error) {
+      console.error("Error updating quote status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update quote status",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleMessagePro = (userId: string) => {
+    navigate(`/conversation/${userId}`);
   };
 
   if (loading) {
@@ -204,20 +249,78 @@ const YourQuotes = () => {
                         <p className="text-sm font-semibold">Quotes Received:</p>
                         {request.quote_responses.map((response) => (
                           <div key={response.id} className="bg-accent/50 p-3 rounded-lg">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-medium">{response.professionals.name}</span>
-                              <span className="text-lg font-bold text-primary">
-                                ${response.quote_amount}
-                              </span>
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-medium">{response.professionals.name}</span>
+                                  {response.status !== 'pending' && (
+                                    <Badge variant={response.status === 'accepted' ? 'default' : 'secondary'}>
+                                      {response.status}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <span className="text-lg font-bold text-primary">
+                                  ${response.quote_amount}
+                                </span>
+                              </div>
                             </div>
                             {response.quote_details && (
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-muted-foreground mb-3">
                                 {response.quote_details}
                               </p>
                             )}
-                            <p className="text-xs text-muted-foreground mt-2">
+                            <p className="text-xs text-muted-foreground mb-3">
                               {formatDate(response.created_at)}
                             </p>
+                            
+                            <div className="flex gap-2 flex-wrap">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMessagePro(response.professionals.user_id);
+                                }}
+                                className="flex items-center gap-1"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                                Message
+                              </Button>
+                              
+                              {response.status === 'pending' && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUpdateQuoteStatus(response.id, 'accepted');
+                                    }}
+                                    disabled={updating === response.id}
+                                    className="flex items-center gap-1"
+                                  >
+                                    {updating === response.id ? (
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                      <Check className="w-4 h-4" />
+                                    )}
+                                    Accept
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUpdateQuoteStatus(response.id, 'declined');
+                                    }}
+                                    disabled={updating === response.id}
+                                    className="flex items-center gap-1"
+                                  >
+                                    <X className="w-4 h-4" />
+                                    Decline
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
