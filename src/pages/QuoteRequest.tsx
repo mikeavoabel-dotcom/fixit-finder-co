@@ -138,15 +138,13 @@ const QuoteRequest = () => {
         return;
       }
 
-      const { error } = await supabase
-        .from("quote_responses")
-        .insert({
-          quote_request_id: quoteRequest.id,
-          professional_id: professionalId,
-          quote_amount: parseFloat(quoteAmount),
-          quote_details: quoteDetails,
-          response_order: responseOrder,
-        });
+      const { data, error } = await supabase.functions.invoke("submit-quote-response", {
+        body: {
+          quoteRequestId: quoteRequest.id,
+          quoteAmount: parseFloat(quoteAmount),
+          quoteDetails,
+        },
+      });
 
       if (error) throw error;
 

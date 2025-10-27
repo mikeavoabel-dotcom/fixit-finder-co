@@ -78,6 +78,27 @@ const Profile = () => {
     }
   };
 
+  // Realtime: push new notifications instantly
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel('notifications')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`,
+      }, (payload) => {
+        // @ts-ignore new row payload
+        setNotifications((prev) => [payload.new as any, ...prev]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const formatTimeAgo = (timestamp: string) => {
     const now = new Date();
     const notifTime = new Date(timestamp);
