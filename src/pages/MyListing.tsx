@@ -21,6 +21,8 @@ interface Professional {
   phone: string | null;
   service_zipcodes: string[];
   is_sponsored: boolean;
+  stripe_account_id: string | null;
+  stripe_onboarding_complete: boolean;
 }
 
 const MyListing = () => {
@@ -28,6 +30,7 @@ const MyListing = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [promoting, setPromoting] = useState(false);
+  const [connectingStripe, setConnectingStripe] = useState(false);
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -39,6 +42,12 @@ const MyListing = () => {
     const sessionId = searchParams.get("session_id");
     if (sessionId) {
       verifyPayment(sessionId);
+    }
+
+    // Check for onboarding completion
+    const onboarding = searchParams.get("onboarding");
+    if (onboarding === "complete") {
+      checkStripeAccount();
     }
   }, [searchParams]);
 
@@ -168,6 +177,70 @@ const MyListing = () => {
     }
   };
 
+  const handleConnectStripe = async () => {
+    setConnectingStripe(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Error",
+          description: "You must be logged in",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("connect-stripe-account", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Error connecting Stripe account:", error);
+      toast({
+        title: "Error",
+        description: "Failed to connect payment account",
+        variant: "destructive",
+      });
+    } finally {
+      setConnectingStripe(false);
+    }
+  };
+
+  const checkStripeAccount = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) return;
+
+      const { data, error } = await supabase.functions.invoke("check-stripe-account", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.complete) {
+        toast({
+          title: "Success!",
+          description: "Your payment account is now connected",
+        });
+        fetchProfessional();
+        navigate("/my-listing", { replace: true });
+      }
+    } catch (error) {
+      console.error("Error checking Stripe account:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-20">
@@ -294,7 +367,31 @@ const MyListing = () => {
           </CardContent>
         </Card>
 
-        {!professional.is_sponsored && (
+        {!professional.stripe_onboarding_complete && (
+          <Card className="mb-6 border-yellow-500/50 bg-yellow-500/5">
+            <CardHeader>
+              <CardTitle>⚠️ Payment Setup Required</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                To receive bookings and payments through BlueCaller, you need to connect your payment account. 
+                This is required to ensure all transactions are secure and you get paid for your services.
+              </p>
+              <Button onClick={handleConnectStripe} disabled={connectingStripe} className="w-full">
+                {connectingStripe ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  "Connect Payment Account"
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {!professional.is_sponsored && professional.stripe_onboarding_complete && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

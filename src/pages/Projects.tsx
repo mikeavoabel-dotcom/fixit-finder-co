@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Clock, MapPin, Phone, Mail, FileText, Star } from "lucide-react";
+import { Calendar, Clock, MapPin, Phone, Mail, FileText, Star, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ReviewDialog from "@/components/ReviewDialog";
 
@@ -23,6 +23,8 @@ interface Booking {
   status: string;
   created_at: string;
   professional_id: string;
+  payment_status: string;
+  amount: number;
   professionals?: {
     id: string;
     name: string;
@@ -37,6 +39,7 @@ const Projects = () => {
   const [isProfessional, setIsProfessional] = useState(false);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [payingBooking, setPayingBooking] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -157,6 +160,44 @@ const Projects = () => {
     }
   };
 
+  const handlePayment = async (bookingId: string) => {
+    setPayingBooking(bookingId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Error",
+          description: "You must be logged in",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("create-booking-payment", {
+        body: { bookingId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      console.error("Error creating payment:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to start payment",
+        variant: "destructive",
+      });
+    } finally {
+      setPayingBooking(null);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -168,6 +209,19 @@ const Projects = () => {
       case "confirmed_completed":
         return "bg-green-500";
       case "cancelled":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case "paid":
+        return "bg-green-500";
+      case "pending":
+        return "bg-yellow-500";
+      case "unpaid":
         return "bg-red-500";
       default:
         return "bg-gray-500";
@@ -213,9 +267,16 @@ const Projects = () => {
                     <CardTitle>
                       {isProfessional ? booking.customer_name : booking.professionals?.name}
                     </CardTitle>
-                    <Badge className={getStatusColor(booking.status)}>
-                      {getStatusLabel(booking.status)}
-                    </Badge>
+                    <div className="flex flex-col gap-2">
+                      <Badge className={getStatusColor(booking.status)}>
+                        {getStatusLabel(booking.status)}
+                      </Badge>
+                      {!isProfessional && (
+                        <Badge className={getPaymentStatusColor(booking.payment_status)}>
+                          {booking.payment_status}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   {!isProfessional && booking.professionals && (
                     <p className="text-sm text-muted-foreground mt-1">
@@ -224,30 +285,61 @@ const Projects = () => {
                   )}
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {booking.payment_status !== "paid" && !isProfessional && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-4">
+                      <p className="text-sm font-medium mb-2">⚠️ Payment Required</p>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Complete payment to confirm your booking and share your contact details with the professional.
+                      </p>
+                      <Button 
+                        onClick={() => handlePayment(booking.id)}
+                        disabled={payingBooking === booking.id}
+                        className="w-full"
+                      >
+                        {payingBooking === booking.id ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          `Pay $${booking.amount.toFixed(2)}`
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       {isProfessional ? (
                         <>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Phone className="w-4 h-4 text-muted-foreground" />
-                            <a href={`tel:${booking.customer_phone}`} className="text-primary hover:underline">
-                              {booking.customer_phone}
-                            </a>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Mail className="w-4 h-4 text-muted-foreground" />
-                            <a href={`mailto:${booking.customer_email}`} className="text-primary hover:underline">
-                              {booking.customer_email}
-                            </a>
-                          </div>
-                          <div className="flex items-start gap-2 text-sm">
-                            <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                            <span>{booking.customer_address}</span>
-                          </div>
+                          {booking.payment_status === "paid" ? (
+                            <>
+                              <div className="flex items-center gap-2 text-sm">
+                                <Phone className="w-4 h-4 text-muted-foreground" />
+                                <a href={`tel:${booking.customer_phone}`} className="text-primary hover:underline">
+                                  {booking.customer_phone}
+                                </a>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <Mail className="w-4 h-4 text-muted-foreground" />
+                                <a href={`mailto:${booking.customer_email}`} className="text-primary hover:underline">
+                                  {booking.customer_email}
+                                </a>
+                              </div>
+                              <div className="flex items-start gap-2 text-sm">
+                                <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                                <span>{booking.customer_address}</span>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-sm text-muted-foreground p-3 bg-muted rounded-lg">
+                              Contact details will be revealed after payment is completed.
+                            </div>
+                          )}
                         </>
                       ) : (
                         <>
-                          {booking.professionals?.phone && (
+                          {booking.professionals?.phone && booking.payment_status === "paid" && (
                             <div className="flex items-center gap-2 text-sm">
                               <Phone className="w-4 h-4 text-muted-foreground" />
                               <a href={`tel:${booking.professionals.phone}`} className="text-primary hover:underline">
@@ -296,7 +388,7 @@ const Projects = () => {
 
                   {isProfessional ? (
                     <>
-                      {booking.status === "pending" && (
+                      {booking.status === "pending" && booking.payment_status === "paid" && (
                         <div className="flex gap-2 pt-4">
                           <Button
                             onClick={() => updateStatus(booking.id, "confirmed")}
@@ -314,7 +406,7 @@ const Projects = () => {
                         </div>
                       )}
 
-                      {booking.status === "confirmed" && (
+                      {booking.status === "confirmed" && booking.payment_status === "paid" && (
                         <Button
                           onClick={() => updateStatus(booking.id, "completed")}
                           className="w-full"
@@ -325,7 +417,7 @@ const Projects = () => {
                     </>
                   ) : (
                     <>
-                      {booking.status === "completed" && (
+                      {booking.status === "completed" && booking.payment_status === "paid" && (
                         <div className="space-y-3 pt-4">
                           <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                             <Star className="w-5 h-5 text-yellow-500" />

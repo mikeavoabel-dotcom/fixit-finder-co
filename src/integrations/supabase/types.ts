@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       bookings: {
         Row: {
+          amount: number
           created_at: string
           customer_address: string
           customer_email: string
@@ -24,6 +25,9 @@ export type Database = {
           customer_phone: string
           id: string
           notes: string | null
+          payment_intent_id: string | null
+          payment_status: string | null
+          platform_fee: number
           preferred_date: string
           preferred_time: string
           professional_id: string
@@ -32,6 +36,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amount?: number
           created_at?: string
           customer_address: string
           customer_email: string
@@ -40,6 +45,9 @@ export type Database = {
           customer_phone: string
           id?: string
           notes?: string | null
+          payment_intent_id?: string | null
+          payment_status?: string | null
+          platform_fee?: number
           preferred_date: string
           preferred_time: string
           professional_id: string
@@ -48,6 +56,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amount?: number
           created_at?: string
           customer_address?: string
           customer_email?: string
@@ -56,6 +65,9 @@ export type Database = {
           customer_phone?: string
           id?: string
           notes?: string | null
+          payment_intent_id?: string | null
+          payment_status?: string | null
+          platform_fee?: number
           preferred_date?: string
           preferred_time?: string
           professional_id?: string
@@ -132,6 +144,8 @@ export type Database = {
           phone: string | null
           service_zipcodes: string[]
           specialty: string
+          stripe_account_id: string | null
+          stripe_onboarding_complete: boolean | null
           total_jobs: number | null
           updated_at: string
           user_id: string
@@ -148,6 +162,8 @@ export type Database = {
           phone?: string | null
           service_zipcodes?: string[]
           specialty: string
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean | null
           total_jobs?: number | null
           updated_at?: string
           user_id: string
@@ -164,6 +180,8 @@ export type Database = {
           phone?: string | null
           service_zipcodes?: string[]
           specialty?: string
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean | null
           total_jobs?: number | null
           updated_at?: string
           user_id?: string
