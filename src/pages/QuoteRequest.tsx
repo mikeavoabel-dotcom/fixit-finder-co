@@ -75,9 +75,18 @@ const QuoteRequest = () => {
         .from("quote_requests")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (requestError) throw requestError;
+      if (!request) {
+        toast({
+          title: "Quote request not found",
+          description: "This quote request may have been deleted or you don't have access to it.",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
       setQuoteRequest(request);
 
       // Fetch responses
