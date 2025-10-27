@@ -49,20 +49,26 @@ serve(async (req) => {
 
     if (quoteError) throw quoteError;
 
-    // Find matching professionals
+    // Find matching professionals (search by specialty and zipcode)
     const { data: professionals, error: profError } = await supabaseClient
       .from("professionals")
-      .select("id, user_id, name, specialty")
-      .ilike("specialty", `%${serviceCategory}%`)
-      .contains("service_zipcodes", [zipcode]);
+      .select("id, user_id, name, specialty, service_zipcodes")
+      .ilike("specialty", `%${serviceCategory}%`);
 
     if (profError) {
       console.error("Error finding professionals:", profError);
     }
 
+    // Filter professionals by zipcode (client-side filtering since contains might not work as expected)
+    const matchingProfessionals = professionals?.filter(prof => 
+      prof.service_zipcodes && prof.service_zipcodes.includes(zipcode)
+    ) || [];
+
+    console.log(`Found ${matchingProfessionals.length} matching professionals for ${serviceCategory} in ${zipcode}`);
+
     // Create notifications for matching professionals
-    if (professionals && professionals.length > 0) {
-      const notifications = professionals.map(prof => ({
+    if (matchingProfessionals.length > 0) {
+      const notifications = matchingProfessionals.map(prof => ({
         user_id: prof.user_id,
         title: "New Quote Request",
         message: `New ${serviceCategory} quote request in ${zipcode}. Be one of the first 3 to respond!`,
@@ -78,13 +84,15 @@ serve(async (req) => {
       } else {
         console.log(`Created ${notifications.length} notifications for professionals`);
       }
+    } else {
+      console.log("No matching professionals found for this request");
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         quoteRequestId: quoteRequest.id,
-        professionalsNotified: professionals?.length || 0
+        professionalsNotified: matchingProfessionals.length
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
