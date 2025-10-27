@@ -138,9 +138,16 @@ const YourQuotes = () => {
   const handleUpdateQuoteStatus = async (quoteResponseId: string, newStatus: 'accepted' | 'declined') => {
     setUpdating(quoteResponseId);
     try {
+      const updateData: any = { status: newStatus };
+      
+      // If accepting, set the accepted_at timestamp
+      if (newStatus === 'accepted') {
+        updateData.accepted_at = new Date().toISOString();
+      }
+      
       const { error } = await supabase
         .from("quote_responses")
-        .update({ status: newStatus })
+        .update(updateData)
         .eq("id", quoteResponseId);
 
       if (error) throw error;
@@ -148,7 +155,7 @@ const YourQuotes = () => {
       toast({
         title: newStatus === 'accepted' ? "Quote Accepted!" : "Quote Declined",
         description: newStatus === 'accepted' 
-          ? "The professional will be notified of your acceptance." 
+          ? "The professional has been notified and has 10 minutes to respond." 
           : "The quote has been declined.",
       });
 
@@ -287,38 +294,41 @@ const YourQuotes = () => {
                                 Message
                               </Button>
                               
+                              {/* Show Accept button if not accepted yet */}
+                              {response.status !== 'accepted' && (
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdateQuoteStatus(response.id, 'accepted');
+                                  }}
+                                  disabled={updating === response.id}
+                                  className="flex items-center gap-1"
+                                >
+                                  {updating === response.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Check className="w-4 h-4" />
+                                  )}
+                                  Accept
+                                </Button>
+                              )}
+                              
+                              {/* Show Decline button only if pending */}
                               {response.status === 'pending' && (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleUpdateQuoteStatus(response.id, 'accepted');
-                                    }}
-                                    disabled={updating === response.id}
-                                    className="flex items-center gap-1"
-                                  >
-                                    {updating === response.id ? (
-                                      <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                      <Check className="w-4 h-4" />
-                                    )}
-                                    Accept
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleUpdateQuoteStatus(response.id, 'declined');
-                                    }}
-                                    disabled={updating === response.id}
-                                    className="flex items-center gap-1"
-                                  >
-                                    <X className="w-4 h-4" />
-                                    Decline
-                                  </Button>
-                                </>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdateQuoteStatus(response.id, 'declined');
+                                  }}
+                                  disabled={updating === response.id}
+                                  className="flex items-center gap-1"
+                                >
+                                  <X className="w-4 h-4" />
+                                  Decline
+                                </Button>
                               )}
                             </div>
                           </div>

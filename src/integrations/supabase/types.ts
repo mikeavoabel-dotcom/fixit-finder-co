@@ -307,6 +307,7 @@ export type Database = {
       }
       quote_responses: {
         Row: {
+          accepted_at: string | null
           created_at: string
           id: string
           professional_id: string
@@ -317,6 +318,7 @@ export type Database = {
           status: string | null
         }
         Insert: {
+          accepted_at?: string | null
           created_at?: string
           id?: string
           professional_id: string
@@ -327,6 +329,7 @@ export type Database = {
           status?: string | null
         }
         Update: {
+          accepted_at?: string | null
           created_at?: string
           id?: string
           professional_id?: string
@@ -444,6 +447,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_expired_quote_acceptances: { Args: never; Returns: undefined }
       generate_referral_code: { Args: never; Returns: string }
       get_professional_rating: {
         Args: { professional_id: string }
