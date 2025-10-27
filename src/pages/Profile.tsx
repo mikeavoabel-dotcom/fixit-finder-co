@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ChevronRight, Send, Settings, UserCircle, LifeBuoy, MessageCircle, Share2, Briefcase, Bell, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import SimpleHeader from "@/components/SimpleHeader";
 import BottomNav from "@/components/BottomNav";
 import InviteFriendsDialog from "@/components/InviteFriendsDialog";
@@ -13,6 +15,11 @@ const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: "Welcome to BlueCaller!", message: "Thanks for joining our community", time: "2 hours ago", unread: true },
+    { id: 2, title: "Profile Update", message: "Your profile has been updated successfully", time: "1 day ago", unread: false },
+    { id: 3, title: "New Message", message: "You have a new message from a professional", time: "3 days ago", unread: false },
+  ]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -125,7 +132,61 @@ const Profile = () => {
                 <p className="text-sm text-background/80">{user?.email}</p>
               </div>
             </div>
-            <Bell className="w-6 h-6 text-background" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="relative">
+                  <Bell className="w-6 h-6 text-background" />
+                  {notifications.some(n => n.unread) && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full" />
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0" align="end">
+                <div className="p-4 border-b border-border">
+                  <h3 className="font-semibold text-foreground">Notifications</h3>
+                </div>
+                <ScrollArea className="h-[300px]">
+                  {notifications.length === 0 ? (
+                    <div className="p-4 text-center text-muted-foreground">
+                      No notifications yet
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-border">
+                      {notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`p-4 hover:bg-accent transition-colors cursor-pointer ${
+                            notif.unread ? "bg-accent/50" : ""
+                          }`}
+                          onClick={() => {
+                            setNotifications(notifications.map(n => 
+                              n.id === notif.id ? { ...n, unread: false } : n
+                            ));
+                          }}
+                        >
+                          <div className="flex justify-between items-start gap-2">
+                            <div className="flex-1">
+                              <h4 className="font-medium text-foreground text-sm">
+                                {notif.title}
+                              </h4>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {notif.message}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                {notif.time}
+                              </p>
+                            </div>
+                            {notif.unread && (
+                              <span className="w-2 h-2 bg-primary rounded-full mt-1" />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>
