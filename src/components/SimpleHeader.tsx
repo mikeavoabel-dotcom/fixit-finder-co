@@ -28,7 +28,7 @@ const SimpleHeader = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <Home className="w-6 h-6 text-primary" />
-            <span className="text-xl font-bold text-primary">Fixific</span>
+            <span className="text-xl font-bold text-primary">BlueCaller</span>
           </div>
           <div className="flex items-center gap-3">
             {!user ? (

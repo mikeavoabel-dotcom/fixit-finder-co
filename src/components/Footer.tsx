@@ -9,7 +9,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <Home className="w-8 h-8 text-primary" />
-              <span className="text-2xl font-bold text-primary">Fixific</span>
+              <span className="text-2xl font-bold text-primary">BlueCaller</span>
             </div>
             <p className="text-background/80 mb-4">
               Connect with local home service professionals
@@ -38,7 +38,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-background/20 mt-8 pt-8 text-center text-background/60">
-          <p>&copy; 2025 Fixific. All rights reserved.</p>
+          <p>&copy; 2025 BlueCaller. All rights reserved.</p>
         </div>
       </div>
     </footer>

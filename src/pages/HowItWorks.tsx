@@ -59,7 +59,7 @@ const HowItWorks = () => {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-              How Fixific Works
+              How BlueCaller Works
             </h1>
             <p className="text-lg text-muted-foreground">
               Simple, transparent, and designed for success
@@ -110,7 +110,7 @@ const HowItWorks = () => {
             <CardContent className="py-8 text-center">
               <h3 className="text-2xl font-bold mb-2">Ready to Get Started?</h3>
               <p className="text-primary-foreground/90">
-                Join thousands of satisfied customers and professionals using Fixific
+                Join thousands of satisfied customers and professionals using BlueCaller
               </p>
             </CardContent>
           </Card>

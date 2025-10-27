@@ -51,7 +51,7 @@ const Support = () => {
             </CardHeader>
             <CardContent>
               <Button className="w-full" variant="outline">
-                1-800-FIXIFIC
+                1-800-BLUECALL
               </Button>
             </CardContent>
           </Card>

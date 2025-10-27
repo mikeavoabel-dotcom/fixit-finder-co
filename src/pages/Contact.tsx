@@ -37,7 +37,7 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email",
-      content: "support@fixific.com",
+      content: "support@bluecaller.com",
       description: "We'll respond within 24 hours"
     },
     {
@@ -55,7 +55,7 @@ const Contact = () => {
     {
       icon: MessageSquare,
       title: "Support",
-      content: "help.fixific.com",
+      content: "help.bluecaller.com",
       description: "Browse our help center"
     }
   ];

@@ -119,7 +119,7 @@ const Auth = () => {
           <CardDescription>
             {isLogin
               ? "Enter your credentials to access your account"
-              : "Sign up to start using Fixific"}
+              : "Sign up to start using BlueCaller"}
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -15,7 +15,7 @@ const Feedback = () => {
     e.preventDefault();
     toast({
       title: "Feedback Submitted",
-      description: "Thank you for helping us improve Fixific!",
+      description: "Thank you for helping us improve BlueCaller!",
     });
     setFeedback("");
   };
@@ -29,7 +29,7 @@ const Feedback = () => {
           <CardHeader>
             <CardTitle className="text-3xl">Share Your Feedback</CardTitle>
             <CardDescription>
-              We'd love to hear your thoughts on how we can improve Fixific
+              We'd love to hear your thoughts on how we can improve BlueCaller
             </CardDescription>
           </CardHeader>
           <CardContent>

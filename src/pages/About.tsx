@@ -36,7 +36,7 @@ const About = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-              About Fixific
+              About BlueCaller
             </h1>
             <p className="text-lg text-muted-foreground">
               Connecting communities with trusted local professionals
@@ -49,13 +49,13 @@ const About = () => {
             </CardHeader>
             <CardContent className="prose prose-gray max-w-none">
               <p className="text-muted-foreground mb-4">
-                Fixific was founded with a simple mission: make it easy for homeowners to find and hire trusted local service professionals. We understand how challenging it can be to find reliable help for home repairs and improvements.
+                BlueCaller was founded with a simple mission: make it easy for homeowners to find and hire trusted local service professionals. We understand how challenging it can be to find reliable help for home repairs and improvements.
               </p>
               <p className="text-muted-foreground mb-4">
                 Our platform connects skilled professionals with customers who need their services, creating a trusted marketplace where quality work meets fair prices. We've helped thousands of homeowners complete their projects and enabled countless professionals to grow their businesses.
               </p>
               <p className="text-muted-foreground">
-                Today, Fixific serves communities across the country, offering services ranging from plumbing and electrical work to landscaping and home renovation. We're proud to be the bridge between talented professionals and satisfied customers.
+                Today, BlueCaller serves communities across the country, offering services ranging from plumbing and electrical work to landscaping and home renovation. We're proud to be the bridge between talented professionals and satisfied customers.
               </p>
             </CardContent>
           </Card>
@@ -82,7 +82,7 @@ const About = () => {
             <CardHeader>
               <CardTitle>Join Our Community</CardTitle>
               <CardDescription>
-                Whether you're a homeowner looking for help or a professional ready to grow your business, Fixific is here for you.
+                Whether you're a homeowner looking for help or a professional ready to grow your business, BlueCaller is here for you.
               </CardDescription>
             </CardHeader>
           </Card>

@@ -132,10 +132,10 @@ const BecomePro = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-              Become a Fixer on Fixific
+              Become a Pro on BlueCaller
             </h1>
             <p className="text-lg text-muted-foreground">
-              Join thousands of professionals growing their business with Fixific
+              Join thousands of professionals growing their business with BlueCaller
             </p>
           </div>
 

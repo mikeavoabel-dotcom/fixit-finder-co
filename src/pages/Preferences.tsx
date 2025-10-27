@@ -30,7 +30,7 @@ const Preferences = () => {
         <Card>
           <CardHeader>
             <CardTitle>Notification Settings</CardTitle>
-            <CardDescription>Manage how you receive updates from Fixific</CardDescription>
+            <CardDescription>Manage how you receive updates from BlueCaller</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">

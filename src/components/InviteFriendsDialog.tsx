@@ -15,7 +15,7 @@ const InviteFriendsDialog = ({ referralCode, trigger }: InviteFriendsDialogProps
   const { toast } = useToast();
   
   const referralLink = `${window.location.origin}/auth?ref=${referralCode}`;
-  const shareMessage = `Join Fixific and get 10% off (up to $97)! Use my referral code: ${referralCode}`;
+  const shareMessage = `Join BlueCaller and get 10% off (up to $97)! Use my referral code: ${referralCode}`;
 
   const handleCopy = async () => {
     try {
@@ -39,7 +39,7 @@ const InviteFriendsDialog = ({ referralCode, trigger }: InviteFriendsDialogProps
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Join Fixific",
+          title: "Join BlueCaller",
           text: shareMessage,
           url: referralLink,
         });
