@@ -1,4 +1,4 @@
-import { Home, Mail, Search, FileText, User } from "lucide-react";
+import { Home, Mail, Search, FileText, User, ClipboardList } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const BottomNav = () => {
@@ -7,7 +7,7 @@ const BottomNav = () => {
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Mail, label: "Inbox", path: "/inbox" },
-    { icon: Search, label: "Search", path: "/search" },
+    { icon: ClipboardList, label: "Your Quotes", path: "/your-quotes" },
     { icon: FileText, label: "Projects", path: "/projects" },
     { icon: User, label: "Profile", path: "/profile" },
   ];
