@@ -15,11 +15,7 @@ const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: "Welcome to BlueCaller!", message: "Thanks for joining our community", time: "2 hours ago", unread: true, link: "/welcome" },
-    { id: 2, title: "Profile Update", message: "Your profile has been updated successfully", time: "1 day ago", unread: false, link: "/account" },
-    { id: 3, title: "New Message", message: "You have a new message from a professional", time: "3 days ago", unread: false, link: "/inbox" },
-  ]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -46,6 +42,7 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchNotifications();
     }
   }, [user]);
 
@@ -63,6 +60,51 @@ const Profile = () => {
       console.error("Error fetching profile:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setNotifications(data || []);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const notifTime = new Date(timestamp);
+    const diffMs = now.getTime() - notifTime.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+  };
+
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("id", notificationId);
+
+      if (error) throw error;
+      
+      setNotifications(notifications.map(n => 
+        n.id === notificationId ? { ...n, read: true } : n
+      ));
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
     }
   };
 
@@ -136,7 +178,7 @@ const Profile = () => {
               <PopoverTrigger asChild>
                 <button className="relative">
                   <Bell className="w-6 h-6 text-background" />
-                  {notifications.some(n => n.unread) && (
+                  {notifications.some(n => !n.read) && (
                     <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full" />
                   )}
                 </button>
@@ -156,12 +198,10 @@ const Profile = () => {
                         <div
                           key={notif.id}
                           className={`p-4 hover:bg-accent transition-colors cursor-pointer ${
-                            notif.unread ? "bg-accent/50" : ""
+                            !notif.read ? "bg-accent/50" : ""
                           }`}
                           onClick={() => {
-                            setNotifications(notifications.map(n => 
-                              n.id === notif.id ? { ...n, unread: false } : n
-                            ));
+                            markAsRead(notif.id);
                             if (notif.link) {
                               navigate(notif.link);
                             }
@@ -176,10 +216,10 @@ const Profile = () => {
                                 {notif.message}
                               </p>
                               <p className="text-xs text-muted-foreground mt-2">
-                                {notif.time}
+                                {formatTimeAgo(notif.created_at)}
                               </p>
                             </div>
-                            {notif.unread && (
+                            {!notif.read && (
                               <span className="w-2 h-2 bg-primary rounded-full mt-1" />
                             )}
                           </div>
