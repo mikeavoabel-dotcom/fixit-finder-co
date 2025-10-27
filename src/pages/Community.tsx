@@ -2,23 +2,29 @@ import SimpleHeader from "@/components/SimpleHeader";
 import BottomNav from "@/components/BottomNav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Shield, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Community = () => {
+  const navigate = useNavigate();
+  
   const legalItems = [
     {
       icon: FileText,
       title: "Terms of Service",
-      description: "Read our terms and conditions"
+      description: "Read our terms and conditions",
+      path: "/terms"
     },
     {
       icon: Shield,
       title: "Privacy Policy",
-      description: "How we protect your data"
+      description: "How we protect your data",
+      path: "/privacy"
     },
     {
       icon: Users,
       title: "Community Guidelines",
-      description: "Our community standards"
+      description: "Our community standards",
+      path: "/guidelines"
     }
   ];
 
@@ -33,7 +39,11 @@ const Community = () => {
           {legalItems.map((item, index) => {
             const Icon = item.icon;
             return (
-              <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card 
+                key={index} 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => navigate(item.path)}
+              >
                 <CardHeader>
                   <Icon className="w-10 h-10 text-primary mb-2" />
                   <CardTitle>{item.title}</CardTitle>

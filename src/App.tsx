@@ -24,6 +24,9 @@ import Account from "./pages/Account";
 import Support from "./pages/Support";
 import Community from "./pages/Community";
 import Feedback from "./pages/Feedback";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CommunityGuidelines from "./pages/CommunityGuidelines";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +59,9 @@ const App = () => (
           <Route path="/support" element={<Support />} />
           <Route path="/community" element={<Community />} />
           <Route path="/feedback" element={<Feedback />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/guidelines" element={<CommunityGuidelines />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
