@@ -31,6 +31,13 @@ const SimpleHeader = () => {
             <span className="text-xl font-bold text-primary">BlueCaller</span>
           </div>
           <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost"
+              className="hidden md:flex text-foreground hover:text-foreground"
+              onClick={() => navigate("/get-quotes")}
+            >
+              Get Quotes
+            </Button>
             {!user ? (
               <>
                 <Button 

@@ -28,7 +28,23 @@ const Hero = () => {
             Find the perfect <span className="font-medium italic">professional</span> at your call
           </h1>
           
+          {/* Get Quotes CTA */}
+          <div className="mb-8">
+            <Button 
+              size="lg" 
+              className="gap-2 text-lg px-8 py-6 h-auto"
+              onClick={() => navigate("/get-quotes")}
+            >
+              Get 3 Free Quotes
+              <ArrowRight className="w-5 h-5" />
+            </Button>
+            <p className="text-sm text-muted-foreground mt-2">
+              Compare quotes from top-rated professionals
+            </p>
+          </div>
+
           <div className="relative max-w-3xl mx-auto">
+            <p className="text-muted-foreground mb-4">Or browse professionals by zipcode:</p>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -43,10 +59,11 @@ const Hero = () => {
               </div>
               <Button 
                 size="lg" 
-                className="h-14 px-6 bg-primary hover:bg-primary/90"
+                variant="outline"
+                className="h-14 px-6"
                 onClick={handleSearch}
               >
-                <ArrowRight className="w-5 h-5" />
+                <Search className="w-5 h-5" />
               </Button>
             </div>
           </div>

@@ -28,6 +28,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CommunityGuidelines from "./pages/CommunityGuidelines";
 import Welcome from "./pages/Welcome";
+import GetQuotes from "./pages/GetQuotes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/guidelines" element={<CommunityGuidelines />} />
           <Route path="/welcome" element={<Welcome />} />
+          <Route path="/get-quotes" element={<GetQuotes />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
